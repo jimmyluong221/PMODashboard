@@ -9,8 +9,12 @@
 .task-no{font-family:monospace;font-size:11px;color:var(--sand);background:#171e19;padding:2px 6px;border-radius:4px}
 .task-title{flex:1;min-width:120px}
 .lead-tag,.dep-tag{font-size:11px;color:var(--muted);background:#2b352a;padding:2px 8px;border-radius:20px}
+.task-status{width:auto;margin:0;padding:4px 8px;font-size:11.5px;font-weight:700;border-radius:20px;background:#1d251f;border:1px solid #596656;color:var(--ink)}
+.task-status:disabled{color:var(--orange);border-color:var(--orange);opacity:.85}
 .consult-task{border:1px solid #647253;background:#283428;color:var(--sand);font-size:11px;font-weight:700;padding:5px 10px;border-radius:20px;cursor:pointer;white-space:nowrap}
 .consult-task:hover{background:#354231;border-color:var(--moss)}
+#progress:disabled{opacity:.6}
+#nextStep[readonly]{color:var(--sand);background:#1a2118}
 .task input[type=checkbox]{width:17px;height:17px;margin:0;accent-color:var(--moss)}
 .task input[type=checkbox]:disabled{opacity:.4}
 .task.done .task-title{text-decoration:line-through;color:#879482}
