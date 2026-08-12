@@ -1,0 +1,26 @@
+# Helm — a coached project management portal / cổng quản lý dự án
+
+Single-file PM portal with a methodology brain and full **English / Tiếng Việt** support (switch in the header, persists, re-renders live — reports generate in the active language).
+
+## Features
+
+- **Bilingual UI** — EN/VI toggle covering every screen, coach hint, chart label, toast, confirm dialog, and the generated status report; demo data seeds with localized project names
+- **Mode toggle per project** — Sprint ⇄ Kanban switches the board rules, metrics engine, hints, and accent theme (indigo = cadence, teal = flow); history survives switching
+- **Coach hints** — a toggleable explanation layer at every step: why 2-week sprints, how to size WIP limits, how to read each chart, what to say at standup
+- **Board** — drag & drop with hover lift + drop-target highlighting, ‹ › buttons for touch, WIP-limit breach highlighting, blocked/churn tags, live sprint progress bar
+- **Backlog & sprints** — replenishment queue (Kanban) or full sprint lifecycle with velocity-informed commitment hints, say/do and goal-met captured at close
+- **Metrics** — velocity vs committed, burndown, say/do, scope churn (Sprint) · cycle time P50/P85, throughput, WIP, aging alerts, 28-day CFD (Kanban) — all computed from real per-task event history
+- **Reporting** — one click builds an exec-ready markdown status (ON TRACK / AT RISK verdict) in the current language, with copy/download
+- **Data** — localStorage persistence, JSON export/import, one-click demo with 3 weeks of generated history
+
+## Design
+
+Light theme. Bricolage Grotesque display + Public Sans body + IBM Plex Mono for data. Layered shadows, hover micro-interactions, modal/toast motion — all gated behind `prefers-reduced-motion`. The mode accent recolors the whole workspace so you always know which operating model you're in.
+
+## Stack & deploy
+
+One `index.html`: plain HTML/CSS/vanilla JS, no dependencies, no build. Open it directly, or GitHub Pages: upload → Settings → Pages → deploy from `main` / root.
+
+## Backend roadmap
+
+Cloud sync via Supabase (auth + Postgres + RLS + realtime) is specified in [`SUPABASE_PLAN.md`](SUPABASE_PLAN.md); the storage layer is already isolated behind `load()`/`save()`, so it's an additive change.
