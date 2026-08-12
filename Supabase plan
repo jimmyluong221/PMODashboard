@@ -1,0 +1,168 @@
+# Helm → Supabase sync plan
+
+The portal is deliberately built so the backend is an *additive* change: all reads/writes already pass through two functions (`load()` / `save()`), the whole state is one serializable document, and every task mutation is appended to a per-task `history` log. That gives us three clean phases.
+
+## Why Supabase
+
+- Postgres + Auth + Row Level Security + Realtime in one project, callable directly from a static page — the supabase-js v2 client loads from a CDN, so the "no build step, deploy on GitHub Pages" property is preserved.
+- The browser only ever holds the **anon (publishable) key**, which is safe to expose *by design* — actual access control lives in RLS policies checked against `auth.uid()` on every query. The service key never ships to any client.
+- RLS is deny-by-default once enabled: no policy, no rows. This is the entire security model, so every table below gets RLS enabled plus explicit policies.
+
+## Phase 1 — Auth + document sync (a weekend)
+
+Keep the client's data shape exactly as-is; store each project as one JSONB row. Fastest path to "my projects follow me across devices."
+
+### Schema
+
+```sql
+-- One row per user, auto-created on signup
+create table public.profiles (
+  id uuid primary key references auth.users(id) on delete cascade,
+  display_name text,
+  created_at timestamptz default now()
+);
+
+-- One row per project; the whole project object goes in doc
+create table public.projects (
+  id uuid primary key default gen_random_uuid(),
+  owner_id uuid not null references auth.users(id) on delete cascade,
+  name text not null,
+  mode text not null check (mode in ('scrum','kanban')),
+  doc jsonb not null,                -- { settings, sprints, tasks, seq, ... }
+  updated_at timestamptz not null default now()
+);
+create index on public.projects (owner_id);
+
+alter table public.profiles enable row level security;
+alter table public.projects enable row level security;
+
+create policy "own profile" on public.profiles
+  for all using (auth.uid() = id) with check (auth.uid() = id);
+
+create policy "own projects" on public.projects
+  for all using (auth.uid() = owner_id) with check (auth.uid() = owner_id);
+```
+
+### Client changes (index.html)
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+</script>
+```
+
+1. **Auth**: email magic-link (`sb.auth.signInWithOtp({ email })`) — no password UX to build. Track session with `sb.auth.onAuthStateChange`.
+2. **Storage adapter**: wrap the existing `load()`/`save()` behind an interface:
+   ```js
+   const store = session ? SupabaseAdapter(sb) : LocalAdapter();
+   // both implement: loadAll(), saveProject(p), deleteProject(id)
+   ```
+   `save()` keeps writing to localStorage immediately (it becomes the offline cache), then debounce-pushes the changed project's `doc` to Supabase (~2s after last edit).
+3. **Conflict rule**: last-write-wins via `updated_at`. Before pushing, compare the server's `updated_at` with the one loaded; if the server is newer, pull and merge (Phase 1: prompt "cloud copy is newer — keep which?"). Good enough for a single user on multiple devices.
+4. **First login migration**: if localStorage has projects and the account has none, offer one-click upload.
+
+## Phase 2 — Normalize tasks (enables querying and integrity)
+
+Split `doc` into real tables once sharing/reporting across projects matters:
+
+```sql
+create table public.tasks (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references public.projects(id) on delete cascade,
+  key text not null,
+  title text not null,
+  descr text default '',
+  type text not null default 'story' check (type in ('story','bug','chore')),
+  status text not null default 'backlog'
+    check (status in ('backlog','todo','doing','review','done')),
+  points int not null default 0,
+  sprint_id uuid,
+  blocked boolean not null default false,
+  added_after_start boolean not null default false,
+  created_at timestamptz not null default now(),
+  started_at timestamptz,
+  done_at timestamptz,
+  updated_at timestamptz not null default now()
+);
+
+create table public.sprints (
+  id uuid primary key default gen_random_uuid(),
+  project_id uuid not null references public.projects(id) on delete cascade,
+  number int not null,
+  goal text default '',
+  state text not null default 'planned' check (state in ('planned','active','closed')),
+  start_at timestamptz, end_at timestamptz,
+  committed_points int default 0,
+  summary jsonb
+);
+
+-- Append-only event log: the CFD, cycle time and burndown all derive from this
+create table public.task_events (
+  id bigint generated always as identity primary key,
+  task_id uuid not null references public.tasks(id) on delete cascade,
+  project_id uuid not null references public.projects(id) on delete cascade,
+  at timestamptz not null default now(),
+  from_status text,
+  to_status text not null
+);
+create index on public.tasks (project_id, status);
+create index on public.task_events (project_id, at);
+```
+
+RLS for child tables goes through the parent project (and prepares Phase 3 sharing):
+
+```sql
+create table public.project_members (
+  project_id uuid references public.projects(id) on delete cascade,
+  user_id uuid references auth.users(id) on delete cascade,
+  role text not null default 'editor' check (role in ('viewer','editor','owner')),
+  primary key (project_id, user_id)
+);
+alter table public.project_members enable row level security;
+
+create or replace function public.is_member(pid uuid) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from projects p where p.id = pid and p.owner_id = auth.uid()
+    union
+    select 1 from project_members m where m.project_id = pid and m.user_id = auth.uid()
+  );
+$$;
+
+alter table public.tasks enable row level security;
+alter table public.sprints enable row level security;
+alter table public.task_events enable row level security;
+create policy "member read"  on public.tasks       for select using (public.is_member(project_id));
+create policy "member write" on public.tasks       for all    using (public.is_member(project_id)) with check (public.is_member(project_id));
+-- repeat the pair for sprints and task_events
+```
+
+Metrics stay client-side at first (same functions, fed from fetched rows). Later, heavy ones move server-side as SQL views — e.g. weekly throughput:
+
+```sql
+create view public.v_throughput as
+select project_id, date_trunc('week', done_at) as week, count(*) as items
+from tasks where done_at is not null group by 1, 2;
+```
+
+## Phase 3 — Multiplayer
+
+- **Realtime**: subscribe per project — `sb.channel('proj:'+id).on('postgres_changes', { event:'*', schema:'public', table:'tasks', filter:'project_id=eq.'+id }, apply).subscribe()` — and apply remote changes into local state, re-render. Optimistic local updates already exist (the app renders before any network), so remote events just reconcile.
+- **Sharing**: invite by email → insert into `project_members`; the `is_member` policy does the rest.
+- **Presence** (optional): Supabase Realtime presence to show who's viewing the board.
+
+## Rollout checklist
+
+1. Create Supabase project → note the URL + anon/publishable key (Settings → API); keep the service key out of the repo entirely.
+2. Run the Phase 1 SQL in the SQL editor; confirm every table shows RLS **enabled** and has policies for each command it needs.
+3. Enable email (OTP/magic link) auth; add the GitHub Pages URL to Auth → allowed redirect URLs.
+4. Expose the tables to the Data API (Data API settings) so supabase-js can query them.
+5. Add the CDN script + a small auth panel to `index.html` behind a `CLOUD=true` flag; keep local-only mode as the fallback forever (it's also the offline mode).
+6. Test the security, not just the feature: as user B, try to select user A's project by id — it must return zero rows.
+
+## Risks and mitigations
+
+- **RLS mistakes are the whole risk surface.** Policy tests (step 6) are non-negotiable; never "temporarily disable RLS" on a table reachable by the anon key.
+- **Free-tier pausing**: Supabase free projects pause after inactivity — fine for personal use; the local cache means the app still opens and works, and syncs when the project wakes.
+- **Schema drift**: version the doc (`doc_version` int) in Phase 1 so Phase 2's migration script knows what it's reading.
