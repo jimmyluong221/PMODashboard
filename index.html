@@ -1,9 +1,966 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title> Portfolio</title><link rel="stylesheet" href="styles.css"></head>
-<body><aside><div class="brand">⌁ <span><br>Portfolio</span></div><nav><button class="nav active" data-page="portfolio">Portfolio</button><button class="nav" data-page="project">Project workspace</button><button class="nav" data-page="reference">Cloud delivery reference</button><button class="nav" data-page="settings">Settings</button></nav><p class="small">Personal delivery workspace<br>Plan · build · roam</p></aside>
-<main><header><div><p class="eyebrow">PERSONAL PMO</p><h1 id="pageTitle">Portfolio overview</h1></div><button id="newProject" class="primary">+ New project</button></header>
-<section id="portfolio" class="page show"><div class="stats" id="stats"></div><div class="card"><div class="section-title"><h2>All projects</h2><button id="refresh" class="ghost">Refresh</button></div><div class="table-wrap"><table><thead><tr><th>Project</th><th>Framework</th><th>Phase</th><th>Health</th><th>Progress</th><th>Next step</th><th>Upcoming</th></tr></thead><tbody id="projectRows"></tbody></table></div></div></section>
-<section id="project" class="page"><div id="emptyProject" class="empty">Select a project from the portfolio or create one to begin.</div><div id="projectWorkspace" hidden><div class="workspace-bar"><span id="projectId" class="pill"></span><span id="dirtyFlag" class="dirty-flag" style="display:none">Unsaved changes</span><button id="saveProject" class="primary">Save project</button></div><div class="grid two"><div class="card"><h2>Delivery brief</h2><label>Project name<input id="name" placeholder="e.g. Digital onboarding enhancement"></label><div class="grid two"><label>Framework<select id="framework"><option>Hybrid</option><option>SAFe</option></select></label><label>Delivery phase<select id="phase"><option>Discovery</option><option>Planning</option><option>Build</option><option>Test / UAT</option><option>Release</option><option>Operate</option></select></label></div><div class="grid two"><label>Status<select id="status"><option>Not started</option><option>On track</option><option>At risk</option><option>Blocked</option><option>Complete</option></select></label><label>Health<select id="health"><option>Green</option><option>Amber</option><option>Red</option></select><span id="healthHint" class="hint"></span></label></div><div class="grid two"><label>Owner<input id="owner"></label><label>Sponsor<input id="sponsor"></label></div><div class="grid two"><label>Start date<input id="startDate" type="date"></label><label>Target date<input id="targetDate" type="date"></label></div><label>Progress <span id="progressValue">0%</span><input id="progress" type="range" min="0" max="100" value="0"></label></div><div class="card ai"><h2>AI delivery copilot</h2><p>Use your configured AI provider to produce a first draft from the brief.</p><button class="ghost aiAction" data-prompt="requirements">Draft requirements</button><button class="ghost aiAction" data-prompt="risks">Find delivery risks</button><button class="ghost aiAction" data-prompt="next">Recommend next steps</button><div id="aiOutput" class="ai-output">Configure AI in the Google Sheet Settings tab to use this panel.</div></div></div><div class="card tasks-card"><div class="section-title"><div><p class="eyebrow">TRAIL CHECKLIST</p><h2>Tasks</h2></div><span id="taskCount" class="pill"></span></div><form id="taskForm" class="task-input"><input id="taskText" placeholder="Add a task…" autocomplete="off"><input id="taskOwner" placeholder="Owner" style="flex:0 0 130px"><input id="taskLeadTime" type="number" min="0" placeholder="Lead time (days)"><input id="taskStart" type="date" title="Start date" style="flex:0 0 150px"><input id="taskDue" type="date" title="End date" style="flex:0 0 150px"><select id="taskDependsOn" multiple aria-label="Depends on"></select><button id="addTaskBtn" class="primary" type="submit">Add</button></form><div id="taskList" class="task-list"></div></div><div class="card"><h2>Scope & controls</h2><label>Requirements<textarea id="requirements" placeholder="Business need, acceptance criteria, regulatory constraints…"></textarea></label><div class="grid three"><label>Next step<input id="nextStep" placeholder="e.g. Confirm UAT entry criteria"></label><label>Upcoming (after in-progress)<input id="upcoming" placeholder="Auto from current in-progress task"></label><label>Dependencies<input id="dependencies" placeholder="e.g. Identity platform release"></label></div><label>Known risks<textarea id="risks" placeholder="Risk, impact, mitigation, owner…"></textarea></label></div><div class="card"><div class="section-title"><h2>RAID / work items</h2><button id="addItem" class="ghost">+ Add item</button></div><div id="items"></div></div></div></section>
-<section id="reference" class="page"><div class="card intro"><p class="eyebrow">REFERENCE ONLY</p><h2>Cloud feature delivery</h2><p>Click a stage to trace a feature from team access to a controlled production release. Reported practices and general industry patterns are clearly labelled.</p></div><div class="flow" id="flow"></div></section>
-<section id="settings" class="page"><div class="card settings"><h2>Connection</h2><p>This dashboard is connected to its Google Sheets backend. You are asked for the access password whenever the page loads; it is kept only for the current browser session. AI keys, model and provider settings are managed in your Google Sheet's <strong>Settings</strong> tab.</p><button id="changePassword" class="primary">Change access password</button></div></section>
-</main><template id="itemTemplate"><div class="item"><select class="itemType"><option>Risk</option><option>Assumption</option><option>Issue</option><option>Dependency</option><option>Action</option></select><input class="itemTitle" placeholder="Title"><input class="itemOwner" placeholder="Owner"><input class="itemDue" type="date"><select class="itemStatus"><option>Open</option><option>In progress</option><option>Closed</option></select><button class="remove ghost">×</button></div></template><script src="app.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Helm — project management portal</title>
+<meta name="description" content="A coached project management portal: Sprint or Kanban mode per project, live delivery metrics, and one-click status reports. Data stays in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Public+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F7F4; --card:#FFFFFF; --ink:#1B2421; --muted:#5B655F; --line:#E1E5DE;
+  --sprint:#4A43B5; --sprint-soft:#ECEBF9; --sprint-deep:#322D7E;
+  --flow:#0B7A66; --flow-soft:#E0F1EB; --flow-deep:#0A5145;
+  --amber:#98620A; --amber-soft:#FAF0DB; --red:#B4432A; --red-soft:#F9E7E2;
+  --accent:#1B2421; --accent-soft:#EDEEEA; --accent-deep:#1B2421;
+  --disp:"Bricolage Grotesque",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --r:10px; --rlg:16px;
+}
+body[data-mode="scrum"]{--accent:var(--sprint);--accent-soft:var(--sprint-soft);--accent-deep:var(--sprint-deep)}
+body[data-mode="kanban"]{--accent:var(--flow);--accent-soft:var(--flow-soft);--accent-deep:var(--flow-deep)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1160px;margin:0 auto;padding:0 20px}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+h1,h2,h3{font-family:var(--disp);letter-spacing:-.01em}
+h2{font-size:clamp(23px,3vw,30px);font-weight:600}
+h3{font-size:18px;font-weight:600}
+
+/* ---------- header ---------- */
+header{position:sticky;top:0;z-index:40;background:rgba(246,247,244,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;gap:14px;padding:11px 0;flex-wrap:wrap}
+.brand{font-family:var(--mono);font-size:14px;display:flex;align-items:center;gap:9px;border:0;background:none;color:var(--ink)}
+.brand .mark{display:inline-block;width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--sprint) 49.6%,var(--flow) 50.4%)}
+.bar .grow{flex:1}
+.coach-switch{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+.switch{position:relative;width:40px;height:22px;background:#CBD1C9;border-radius:999px;border:0;transition:background .15s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s}
+.switch[aria-checked="true"]{background:var(--accent)}
+.switch[aria-checked="true"]::after{transform:translateX(18px)}
+@media (prefers-reduced-motion: reduce){.switch,.switch::after{transition:none}}
+
+/* ---------- generic ---------- */
+main{padding:28px 0 80px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--rlg);padding:20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.btn{font-family:var(--mono);font-size:13px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:999px}
+.btn:hover{opacity:.85}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.accent{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.danger{background:transparent;color:var(--red);border-color:var(--red)}
+.btn.sm{padding:4px 11px;font-size:12px}
+.mut{color:var(--muted)} .small{font-size:13.5px}
+.mono{font-family:var(--mono)}
+.spacer{height:20px}
+input[type="text"],input[type="number"],textarea,select{font:inherit;font-size:14.5px;color:var(--ink);background:#FCFDFB;border:1px solid var(--line);border-radius:8px;padding:8px 11px;width:100%}
+textarea{min-height:74px;resize:vertical}
+label.f{display:block;margin-bottom:12px}
+label.f .lb{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+/* ---------- coach hints ---------- */
+.hint{display:flex;gap:9px;background:var(--accent-soft);border-radius:9px;padding:9px 12px;margin-top:8px;font-size:13.5px;color:var(--accent-deep);line-height:1.55}
+.hint::before{content:"?";flex:none;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-family:var(--mono);font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:2px}
+body.coach-off .hint{display:none}
+
+/* ---------- mode segmented control ---------- */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;background:var(--card);padding:3px;gap:3px}
+.seg button{font-family:var(--mono);font-size:12.5px;border:0;background:none;color:var(--muted);padding:6px 14px;border-radius:999px}
+.seg button[aria-pressed="true"]{color:#fff}
+.seg button[data-m="scrum"][aria-pressed="true"]{background:var(--sprint)}
+.seg button[data-m="kanban"][aria-pressed="true"]{background:var(--flow)}
+
+/* ---------- project header & tabs ---------- */
+.phead{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.phead h2{margin-right:4px}
+.pill{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;border-radius:999px;padding:3px 11px;background:var(--accent-soft);color:var(--accent-deep)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:22px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{font-family:var(--mono);font-size:13px;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);padding:9px 13px;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--accent-deep);border-bottom-color:var(--accent)}
+
+/* ---------- home / project cards ---------- */
+.pcard{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:var(--rlg);padding:18px 20px}
+.pcard:hover{border-color:var(--accent)}
+.pcard .nm{font-family:var(--disp);font-weight:600;font-size:19px}
+.pcard .meta{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-top:4px}
+
+/* ---------- board ---------- */
+.board{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:start}
+.col{background:#F0F2ED;border:1px solid var(--line);border-radius:var(--rlg);padding:10px;min-height:120px}
+.col.over{outline:2px dashed var(--accent);outline-offset:-2px}
+.col.breach{background:var(--red-soft);border-color:var(--red)}
+.col h4{font-family:var(--mono);font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);padding:2px 4px 8px;display:flex;justify-content:space-between}
+.col.breach h4 .cnt{color:var(--red);font-weight:500}
+.task{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:10px 11px;margin-bottom:8px;cursor:grab}
+.task .tt{font-size:14px;font-weight:600;line-height:1.35}
+.task .tm{display:flex;gap:8px;align-items:center;font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+.task .tm .dot{width:8px;height:8px;border-radius:50%;flex:none}
+.dot.story{background:var(--flow)} .dot.bug{background:var(--red)} .dot.chore{background:#8A93A5}
+.task .pts{background:var(--accent-soft);color:var(--accent-deep);border-radius:6px;padding:0 6px}
+.task .blocked{background:var(--red-soft);color:var(--red);border-radius:6px;padding:0 6px}
+.task .added{background:var(--amber-soft);color:var(--amber);border-radius:6px;padding:0 6px}
+.task .mv{display:flex;gap:4px;margin-left:auto}
+.task .mv button{border:1px solid var(--line);background:#fff;border-radius:6px;font-family:var(--mono);font-size:12px;padding:1px 8px;color:var(--muted)}
+.task .mv button:hover{color:var(--ink);border-color:var(--ink)}
+.addform{display:flex;gap:6px;margin-top:2px}
+.addform input{font-size:13.5px;padding:6px 9px}
+.empty{border:1px dashed var(--line);border-radius:var(--rlg);padding:30px;text-align:center;color:var(--muted);font-size:14.5px;background:var(--card)}
+
+/* ---------- backlog & sprints ---------- */
+.bl-item{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:8px;flex-wrap:wrap}
+.bl-item .tt{font-size:14px;font-weight:600;flex:1;min-width:140px}
+.bl-item select{width:auto;font-size:12.5px;padding:4px 8px}
+.sprint-card{border:1px solid var(--line);border-left:4px solid var(--sprint);border-radius:var(--rlg);background:var(--card);padding:16px;margin-bottom:12px}
+.sprint-card.active{border-left-color:var(--flow)}
+.sprint-card h4{font-family:var(--mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+.sprint-card .g{font-size:14px;color:var(--muted);margin:4px 0 8px}
+.progress{height:8px;background:#EDEFE9;border-radius:99px;overflow:hidden;margin:8px 0}
+.progress i{display:block;height:100%;background:var(--accent)}
+
+/* ---------- metrics ---------- */
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--rlg);padding:16px 18px}
+.stat .v{font-family:var(--disp);font-weight:700;font-size:30px;line-height:1.1}
+.stat .l{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stat .sub{font-size:13px;color:var(--muted);margin-top:3px}
+.stat.warn .v{color:var(--red)}
+svg text{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+svg .axis{stroke:#C9CFC7;stroke-width:1}
+.chartcard{background:var(--card);border:1px solid var(--line);border-radius:var(--rlg);padding:18px;margin-top:16px}
+.aging li{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.aging li:last-child{border:0}
+.aging .old{color:var(--red);font-family:var(--mono);font-size:12.5px}
+
+/* ---------- reports ---------- */
+#reportOut{font-family:var(--mono);font-size:13px;min-height:340px;white-space:pre;line-height:1.6}
+
+/* ---------- modal ---------- */
+#modal{position:fixed;inset:0;display:none;z-index:60}
+#modal.open{display:block}
+#modal .scrim{position:absolute;inset:0;background:rgba(27,36,33,.45)}
+#modal .box{position:relative;max-width:560px;margin:6vh auto;background:var(--card);border-radius:var(--rlg);padding:24px;max-height:86vh;overflow:auto}
+#modal .box h3{margin-bottom:14px}
+
+/* ---------- toast ---------- */
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:var(--paper);
+  font-family:var(--mono);font-size:13px;padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:70}
+#toast.show{opacity:1}
+
+footer{border-top:1px solid var(--line);padding:22px 0 44px;color:var(--muted);font-size:13px;font-family:var(--mono)}
+@media(max-width:900px){.board{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.board,.grid2,.grid3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap bar">
+    <button class="brand" data-action="nav-home"><span class="mark"></span> helm · pm portal</button>
+    <div class="grow"></div>
+    <div class="coach-switch">coach hints
+      <button class="switch" id="coachSwitch" role="switch" aria-checked="true" aria-label="Toggle coach hints" data-action="toggle-coach"></button>
+    </div>
+  </div>
+</header>
+<main><div class="wrap" id="app"></div></main>
+<div id="modal"><div class="scrim" data-action="close-modal"></div><div class="box" id="modalBox"></div></div>
+<div id="toast" role="status"></div>
+<footer><div class="wrap">helm · single-file portal · data lives in this browser (localStorage) — export regularly · cloud sync via Supabase: see plan</div></footer>
+<script>
+/* ================= state & persistence ================= */
+const LS = 'helm.v1';
+const DAY = 86400000;
+let S = load() || { projects: [], activeProjectId: null, tab: 'board', coach: true };
+function load(){ try{ return JSON.parse(localStorage.getItem(LS)); }catch(e){ return null; } }
+function save(){ try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){} }
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtD = ts => new Date(ts).toLocaleDateString(undefined, {month:'short', day:'numeric'});
+const daysAgo = ts => Math.max(0, Math.round((Date.now() - ts) / DAY));
+const endOfDay = ts => { const d = new Date(ts); d.setHours(23,59,59,999); return d.getTime(); };
+
+const STATUSES = ['backlog','todo','doing','review','done'];
+const LABEL = { backlog:'Backlog', todo:'To do', doing:'In progress', review:'In review', done:'Done' };
+const proj = () => S.projects.find(p => p.id === S.activeProjectId);
+const activeSprint = p => p.sprints.find(s => s.state === 'active');
+const plannedSprints = p => p.sprints.filter(s => s.state === 'planned');
+const closedSprints = p => p.sprints.filter(s => s.state === 'closed');
+const taskById = (p, id) => p.tasks.find(t => t.id === id);
+function toast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._h); toast._h = setTimeout(() => t.classList.remove('show'), 2200); }
+
+/* ================= domain actions ================= */
+function createProject({name, mode, sprintLen, wipDoing, wipReview}){
+  const key = name.replace(/[^A-Za-z]/g,'').slice(0,4).toUpperCase() || 'PRJ';
+  const p = { id: uid(), name, key, mode, createdAt: Date.now(), seq: 0,
+    settings: { sprintLen: sprintLen || 14, wipDoing: wipDoing || 4, wipReview: wipReview || 2 },
+    sprints: [], tasks: [] };
+  S.projects.push(p); S.activeProjectId = p.id; S.tab = p.mode === 'scrum' ? 'backlog' : 'board';
+  return p;
+}
+function createTask(p, {title, type='story', points=3, status='backlog', desc='', priority='medium', sprintId=null}){
+  p.seq++;
+  const t = { id: uid(), key: p.key + '-' + p.seq, title, desc, type, priority, points: +points || 0,
+    status, sprintId, blocked: false, addedAfterStart: false,
+    createdAt: Date.now(), startedAt: null, doneAt: null,
+    history: [{ ts: Date.now(), from: null, to: status }] };
+  const as = activeSprint(p);
+  if (sprintId && as && sprintId === as.id) t.addedAfterStart = true;
+  p.tasks.push(t); return t;
+}
+function setStatus(p, t, to){
+  if (t.status === to || !STATUSES.includes(to)) return;
+  const from = t.status; t.status = to;
+  t.history.push({ ts: Date.now(), from, to });
+  if (to === 'doing' && !t.startedAt) t.startedAt = Date.now();
+  if (to === 'done') t.doneAt = Date.now();
+  if (from === 'done' && to !== 'done') t.doneAt = null;
+}
+function moveTask(p, t, dir){
+  const order = ['todo','doing','review','done'];
+  let i = order.indexOf(t.status);
+  if (i === -1) { setStatus(p, t, 'todo'); return; }
+  const ni = i + dir;
+  if (ni < 0 || ni >= order.length) return;
+  setStatus(p, t, order[ni]);
+}
+function createSprint(p){
+  const n = p.sprints.length + 1;
+  p.sprints.push({ id: uid(), number: n, goal: '', state: 'planned',
+    startAt: null, endAt: null, committedIds: [], committedPoints: 0, summary: null });
+}
+function startSprint(p, sp){
+  if (activeSprint(p)) { toast('Close the active sprint first'); return; }
+  const members = p.tasks.filter(t => t.sprintId === sp.id);
+  if (!members.length) { toast('Assign at least one task first'); return; }
+  sp.state = 'active'; sp.startAt = Date.now();
+  sp.endAt = Date.now() + p.settings.sprintLen * DAY;
+  sp.committedIds = members.map(t => t.id);
+  sp.committedPoints = members.reduce((a,t) => a + t.points, 0);
+  members.forEach(t => { if (t.status === 'backlog') setStatus(p, t, 'todo'); });
+}
+function closeSprint(p, sp){
+  const members = p.tasks.filter(t => t.sprintId === sp.id);
+  const delivered = members.filter(t => t.status === 'done').reduce((a,t) => a + t.points, 0);
+  const added = members.filter(t => t.addedAfterStart).reduce((a,t) => a + t.points, 0);
+  const goalMet = confirm('Closing sprint ' + sp.number + '.\n\nWas the sprint goal met? (OK = yes, Cancel = no)');
+  sp.summary = { committedPoints: sp.committedPoints, deliveredPoints: delivered, addedPoints: added, goalMet, closedAt: Date.now() };
+  sp.state = 'closed';
+  members.forEach(t => {
+    if (t.status !== 'done') { setStatus(p, t, 'backlog'); t.sprintId = null; t.addedAfterStart = false; }
+  });
+}
+
+/* ================= metrics ================= */
+const pct = (arr, q) => { if(!arr.length) return null; const a=[...arr].sort((x,y)=>x-y); return a[Math.min(a.length-1, Math.ceil(q*a.length)-1)]; };
+function cycleDays(t){ return (t.doneAt && t.startedAt) ? Math.max(0.2,(t.doneAt - t.startedAt)/DAY) : null; }
+function kanbanMetrics(p){
+  const done = p.tasks.filter(t => t.status === 'done');
+  const cycles = done.map(cycleDays).filter(v => v !== null);
+  const wip = p.tasks.filter(t => t.status === 'doing' || t.status === 'review');
+  const weeks = [];                                    // throughput, last 6 weeks
+  for (let w = 5; w >= 0; w--){
+    const end = endOfDay(Date.now() - w*7*DAY), start = end - 7*DAY;
+    weeks.push({ label: w === 0 ? 'this wk' : '-' + w + 'w', v: done.filter(t => t.doneAt > start && t.doneAt <= end).length });
+  }
+  const aging = p.tasks.filter(t => t.startedAt && !t.doneAt && t.status !== 'backlog')
+    .map(t => ({ t, age: (Date.now() - t.startedAt)/DAY })).sort((a,b) => b.age - a.age);
+  return { cycles, p85: pct(cycles,.85), p50: pct(cycles,.5), weeks,
+    tpAvg: weeks.reduce((a,w)=>a+w.v,0)/6, wipNow: wip.length,
+    aging, blocked: p.tasks.filter(t => t.blocked && t.status !== 'done') };
+}
+function cfdSeries(p, days=28){
+  const out = [];
+  for (let d = days-1; d >= 0; d--){
+    const ts = endOfDay(Date.now() - d*DAY);
+    const c = { queued:0, doing:0, review:0, done:0 };
+    p.tasks.forEach(t => {
+      if (t.createdAt > ts) return;
+      let st = 'backlog';
+      for (const h of t.history){ if (h.ts <= ts) st = h.to; else break; }
+      if (st === 'backlog' || st === 'todo') c.queued++;
+      else c[st]++;
+    });
+    out.push(c);
+  }
+  return out;
+}
+function burndown(p, sp){
+  const members = p.tasks.filter(t => t.sprintId === sp.id);
+  const total = members.reduce((a,t) => a + t.points, 0);
+  const nDays = Math.max(1, Math.round((sp.endAt - sp.startAt)/DAY));
+  const ideal = [], actual = [];
+  for (let d = 0; d <= nDays; d++){
+    const ts = endOfDay(sp.startAt + d*DAY);
+    ideal.push(total * (1 - d/nDays));
+    if (ts <= endOfDay(Date.now()) || d === 0){
+      const donePts = members.filter(t => t.doneAt && t.doneAt <= ts).reduce((a,t) => a + t.points, 0);
+      actual.push(total - donePts);
+    }
+  }
+  return { total, nDays, ideal, actual,
+    scopeAdded: Math.max(0, total - sp.committedPoints),
+    donePts: members.filter(t => t.status==='done').reduce((a,t)=>a+t.points,0),
+    dayNow: Math.min(nDays, Math.max(0, Math.round((Date.now()-sp.startAt)/DAY))) };
+}
+function velocitySeries(p){
+  return closedSprints(p).map(sp => ({ n: sp.number, delivered: sp.summary.deliveredPoints, committed: sp.summary.committedPoints, goalMet: sp.summary.goalMet }));
+}
+
+/* ================= tiny SVG charts ================= */
+function svgBars(items, {color='var(--accent)', w=560, h=190, ghost=false} = {}){
+  if(!items.length) return '';
+  const max = Math.max(1, ...items.map(i => Math.max(i.v, i.g||0)));
+  const bw = Math.min(56, (w-60)/items.length - 14);
+  let s = `<svg viewBox="0 0 ${w} ${h}" width="100%">`;
+  s += `<line x1="42" y1="${h-30}" x2="${w-8}" y2="${h-30}" class="axis"/>`;
+  items.forEach((it,i) => {
+    const x = 52 + i * ((w-60)/items.length);
+    const bh = (it.v/max)*(h-70), y = h-30-bh;
+    if (ghost && it.g != null){
+      const gh = (it.g/max)*(h-70);
+      s += `<rect x="${x}" y="${h-30-gh}" width="${bw}" height="${gh}" fill="none" stroke="#C9CFC7" stroke-dasharray="3 3" rx="4"/>`;
+    }
+    s += `<rect x="${x}" y="${y}" width="${bw}" height="${Math.max(2,bh)}" fill="${color}" rx="4"/>`;
+    s += `<text x="${x+bw/2}" y="${y-6}" text-anchor="middle" fill="#1B2421">${it.v}</text>`;
+    s += `<text x="${x+bw/2}" y="${h-12}" text-anchor="middle">${esc(it.label)}</text>`;
+  });
+  return s + '</svg>';
+}
+function svgBurndown(bd, w=560, h=210){
+  const max = Math.max(1, bd.total);
+  const x = d => 46 + d*(w-66)/bd.nDays;
+  const y = v => (h-36) - (v/max)*(h-66);
+  let s = `<svg viewBox="0 0 ${w} ${h}" width="100%">`;
+  s += `<line x1="46" y1="14" x2="46" y2="${h-36}" class="axis"/><line x1="46" y1="${h-36}" x2="${w-14}" y2="${h-36}" class="axis"/>`;
+  s += `<text x="46" y="10">pts remaining</text><text x="${w-14}" y="${h-18}" text-anchor="end">day ${bd.nDays}</text>`;
+  s += `<polyline fill="none" stroke="#AEB6AC" stroke-width="1.2" stroke-dasharray="5 5" points="${bd.ideal.map((v,d)=>x(d)+','+y(v)).join(' ')}"/>`;
+  s += `<polyline fill="none" stroke="var(--sprint)" stroke-width="2.2" stroke-linejoin="round" points="${bd.actual.map((v,d)=>x(d)+','+y(v)).join(' ')}"/>`;
+  bd.actual.forEach((v,d)=>{ s += `<circle cx="${x(d)}" cy="${y(v)}" r="3" fill="var(--sprint)"/>`; });
+  return s + '</svg>';
+}
+function svgCFD(series, w=560, h=220){
+  const n = series.length;
+  const max = Math.max(1, ...series.map(c => c.queued + c.doing + c.review + c.done));
+  const x = i => 46 + i*(w-60)/(n-1);
+  const y = v => (h-34) - (v/max)*(h-58);
+  const layers = [
+    { k:'done',   fill:'#0B7A66', op:.5 },
+    { k:'review', fill:'#EF9F27', op:.5 },
+    { k:'doing',  fill:'#4A43B5', op:.45 },
+    { k:'queued', fill:'#B4B2A9', op:.35 },
+  ];
+  let cum = series.map(() => 0), s = `<svg viewBox="0 0 ${w} ${h}" width="100%">`;
+  layers.forEach(L => {
+    const lower = [...cum];
+    cum = cum.map((v,i) => v + series[i][L.k]);
+    const top = cum.map((v,i) => x(i)+','+y(v)).join(' ');
+    const bot = lower.map((v,i) => x(i)+','+y(v)).reverse().join(' ');
+    s += `<polygon points="${top} ${bot}" fill="${L.fill}" opacity="${L.op}"/>`;
+  });
+  s += `<line x1="46" y1="14" x2="46" y2="${h-34}" class="axis"/><line x1="46" y1="${h-34}" x2="${w-14}" y2="${h-34}" class="axis"/>`;
+  s += `<text x="46" y="10">items (cumulative)</text><text x="${w-14}" y="${h-16}" text-anchor="end">today</text><text x="46" y="${h-16}">-${n-1}d</text>`;
+  s += `<text x="${w-14}" y="${h-46}" text-anchor="end" fill="#0A5145">done ■</text>`;
+  return s + '</svg>';
+}
+/* ================= views ================= */
+const app = document.getElementById('app');
+function render(){
+  document.body.classList.toggle('coach-off', !S.coach);
+  document.getElementById('coachSwitch').setAttribute('aria-checked', String(S.coach));
+  const p = proj();
+  document.body.dataset.mode = p ? p.mode : '';
+  app.innerHTML = p ? viewProject(p) : viewHome();
+  if (p && S.tab === 'board') bindDnD(p);
+  save();
+}
+
+/* ---------- home ---------- */
+function viewHome(){
+  const cards = S.projects.map(p => `
+    <button class="pcard" data-action="open-project" data-id="${p.id}">
+      <span class="nm">${esc(p.name)}</span>
+      <span class="meta">${p.key} · ${p.mode === 'scrum' ? 'sprint mode' : 'kanban mode'} · ${p.tasks.length} tasks · ${p.tasks.filter(t=>t.status==='done').length} done</span>
+    </button>`).join('');
+  return `
+  <p class="eyebrow">Workspace</p>
+  <h2 style="margin:6px 0 4px">Your projects</h2>
+  <p class="mut small" style="max-width:64ch">Everything is stored in this browser. Use export in project settings for backups.</p>
+  <div class="hint">Step 1 of everything: a project is a container with a <b>delivery mode</b>. Pick <b>Sprint</b> when stakeholders need date commitments and a demo cadence; pick <b>Kanban</b> when priorities churn and work should flow continuously. You can switch later — history is kept.</div>
+  <div class="spacer"></div>
+  <div class="grid2">${cards || '<div class="empty">No projects yet — create one below, or load the demo data to explore with realistic history.</div>'}</div>
+  <div class="spacer"></div>
+  <div class="grid2">
+    <div class="card">
+      <h3>Create a project</h3>
+      <div class="spacer" style="height:10px"></div>
+      <form data-form="create-project">
+        <label class="f"><span class="lb">Project name</span><input type="text" name="name" required placeholder="e.g. Onboarding revamp">
+          <div class="hint">Name the outcome, not the team — "Onboarding revamp" ages better than "Team A backlog". A 3–4 letter key for ticket IDs is derived automatically.</div></label>
+        <label class="f"><span class="lb">Delivery mode</span>
+          <div class="seg" role="group">
+            <button type="button" data-m="scrum" data-action="pick-mode" aria-pressed="true">Sprint</button>
+            <button type="button" data-m="kanban" data-action="pick-mode" aria-pressed="false">Kanban</button>
+          </div>
+          <input type="hidden" name="mode" value="scrum">
+          <div class="hint"><b>Sprint:</b> fixed timebox, committed scope, velocity forecasting — predictability for stakeholders. <b>Kanban:</b> continuous pull, WIP limits, cycle-time expectations — flexibility for fast-churning work.</div></label>
+        <div class="row">
+          <label class="f" style="flex:1"><span class="lb">Sprint length (days)</span><input type="number" name="sprintLen" value="14" min="7" max="28">
+            <div class="hint">Two weeks is the default for a reason: short enough to adapt, long enough to finish real stories.</div></label>
+          <label class="f" style="flex:1"><span class="lb">WIP limit — in progress</span><input type="number" name="wipDoing" value="4" min="1">
+            <div class="hint">Start near team size + 1, tighten from data. Little's Law: less parallel work = faster finishing.</div></label>
+        </div>
+        <button class="btn accent" type="submit">Create project</button>
+      </form>
+    </div>
+    <div class="card">
+      <h3>Explore with demo data</h3>
+      <p class="mut small" style="margin:8px 0 12px">Loads two projects with three weeks of realistic history — one in each mode — so every chart and report has something to show.</p>
+      <button class="btn ghost" data-action="seed-demo">Load demo projects</button>
+      <div class="hint">Good first move: open the demo, break things, then delete it in Settings. Metrics need history to be meaningful — an empty project shows empty charts, which is correct but unimpressive.</div>
+    </div>
+  </div>`;
+}
+
+/* ---------- project shell ---------- */
+function viewProject(p){
+  const tabs = [['board','Board'], ['backlog', p.mode==='scrum' ? 'Backlog & sprints' : 'Backlog'], ['metrics','Metrics'], ['reports','Reports'], ['settings','Settings']];
+  return `
+  <div class="phead">
+    <h2>${esc(p.name)}</h2>
+    <span class="pill">${p.key}</span>
+    <div class="seg" role="group" aria-label="Delivery mode">
+      <button data-m="scrum" data-action="set-mode" aria-pressed="${p.mode==='scrum'}">Sprint</button>
+      <button data-m="kanban" data-action="set-mode" aria-pressed="${p.mode==='kanban'}">Kanban</button>
+    </div>
+  </div>
+  <div class="hint">Mode changes the operating system, not the data: <b>Sprint</b> shows only the active sprint on the board and unlocks velocity, burndown and say/do. <b>Kanban</b> shows continuous flow with WIP limits and unlocks cycle time, throughput and the CFD. Running sprints <i>with</i> WIP limits is Scrumban — a legitimate hybrid.</div>
+  <div class="spacer" style="height:12px"></div>
+  <div class="tabs" role="tablist">${tabs.map(([k,l]) => `<button role="tab" data-action="tab" data-id="${k}" aria-selected="${S.tab===k}">${l}</button>`).join('')}</div>
+  ${ {board:viewBoard, backlog:viewBacklog, metrics:viewMetrics, reports:viewReports, settings:viewSettings}[S.tab](p) }`;
+}
+
+/* ---------- board ---------- */
+function taskCard(p, t){
+  const age = t.startedAt && !t.doneAt ? daysAgo(t.startedAt) + 'd' : '';
+  return `
+  <div class="task" draggable="true" data-task="${t.id}" data-action="open-task" data-id="${t.id}">
+    <div class="tt">${esc(t.title)}</div>
+    <div class="tm">
+      <span class="dot ${t.type}"></span><span>${t.key}</span>
+      ${p.mode==='scrum' && t.points ? `<span class="pts">${t.points} pts</span>` : ''}
+      ${age ? `<span>${age}</span>` : ''}
+      ${t.blocked ? '<span class="blocked">blocked</span>' : ''}
+      ${t.addedAfterStart ? '<span class="added">added</span>' : ''}
+      <span class="mv">
+        <button data-action="move-left" data-id="${t.id}" aria-label="Move left">‹</button>
+        <button data-action="move-right" data-id="${t.id}" aria-label="Move right">›</button>
+      </span>
+    </div>
+  </div>`;
+}
+function viewBoard(p){
+  const as = activeSprint(p);
+  let pool;
+  if (p.mode === 'scrum'){
+    if (!as) return `<div class="empty">No active sprint.<br><br>
+      <button class="btn accent" data-action="tab" data-id="backlog">Go to Backlog & sprints</button>
+      <div class="hint" style="text-align:left">In Sprint mode the board shows only committed work. The flow: refine the backlog → assign tasks to a planned sprint → press <b>Start sprint</b>. Then this board becomes your daily standup surface.</div></div>`;
+    pool = p.tasks.filter(t => t.sprintId === as.id);
+  } else {
+    pool = p.tasks.filter(t => t.status !== 'backlog');
+  }
+  const cols = ['todo','doing','review','done'].map(st => {
+    const items = pool.filter(t => t.status === st);
+    const lim = st === 'doing' ? p.settings.wipDoing : st === 'review' ? p.settings.wipReview : null;
+    const kanbanLimit = p.mode === 'kanban' && lim;
+    const breach = kanbanLimit && items.length > lim;
+    return `
+    <div class="col ${breach?'breach':''}" data-drop="${st}">
+      <h4><span>${LABEL[st]}</span><span class="cnt">${items.length}${kanbanLimit ? ' / ' + lim : ''}</span></h4>
+      ${items.map(t => taskCard(p,t)).join('')}
+      ${st === 'todo' && p.mode === 'kanban' ? `
+        <form class="addform" data-form="quick-task"><input type="text" name="title" placeholder="+ new card" aria-label="New card title"><button class="btn sm accent" type="submit">add</button></form>` : ''}
+    </div>`;
+  }).join('');
+  const sprintBar = as ? (() => { const bd = burndown(p, as); return `
+    <div class="sprint-card active" style="margin-bottom:14px">
+      <div class="row" style="justify-content:space-between">
+        <h4>Sprint ${as.number} · day ${bd.dayNow} of ${bd.nDays}</h4>
+        <span class="mono small">${bd.donePts}/${bd.total} pts done${bd.scopeAdded ? ' · +' + bd.scopeAdded + ' added' : ''}</span>
+      </div>
+      ${as.goal ? `<p class="g">Goal: ${esc(as.goal)}</p>` : ''}
+      <div class="progress"><i style="width:${bd.total? Math.round(100*bd.donePts/bd.total):0}%"></i></div>
+    </div>`; })() : '';
+  return `
+  ${sprintBar}
+  <div class="hint">${p.mode === 'kanban'
+    ? 'Drag cards (or use ‹ ›) to move work. A <b>red column</b> means the WIP limit is breached — that\'s not an error, it\'s the daily conversation: finish something before starting something. Cards track their age automatically; cycle time starts when a card enters In progress.'
+    : 'This is the committed scope — protect it. New urgent work goes through the backlog and counts as <b>scope churn</b> (amber "added" tag). Move a card to Done only when it meets your definition of done; the burndown and say/do ratio are computed from these moves.'}</div>
+  <div class="spacer" style="height:12px"></div>
+  <div class="board">${cols}</div>`;
+}
+
+/* ---------- backlog & sprints ---------- */
+function viewBacklog(p){
+  const backlogTasks = p.tasks.filter(t => t.status === 'backlog' || (t.sprintId && p.sprints.find(s => s.id===t.sprintId && s.state==='planned')));
+  const as = activeSprint(p);
+  const sprintOpts = t => {
+    const opts = [`<option value="">— backlog —</option>`]
+      .concat(plannedSprints(p).map(s => `<option value="${s.id}" ${t.sprintId===s.id?'selected':''}>Sprint ${s.number} (planned)</option>`));
+    if (as) opts.push(`<option value="${as.id}" ${t.sprintId===as.id?'selected':''}>Sprint ${as.number} (active!)</option>`);
+    return opts.join('');
+  };
+  const list = backlogTasks.map(t => `
+    <div class="bl-item">
+      <span class="dot ${t.type}" style="width:8px;height:8px;border-radius:50%"></span>
+      <button class="tt" style="background:none;border:0;text-align:left;font:inherit;font-weight:600;cursor:pointer" data-action="open-task" data-id="${t.id}">${t.key} · ${esc(t.title)}</button>
+      ${p.mode==='scrum' ? `<span class="mono small mut">${t.points} pts</span>
+        <select data-action-change="assign-sprint" data-id="${t.id}" aria-label="Assign to sprint">${sprintOpts(t)}</select>` :
+        `<button class="btn sm accent" data-action="pull-task" data-id="${t.id}">pull to board →</button>`}
+    </div>`).join('');
+  const newTaskForm = `
+    <div class="card" style="margin-bottom:14px">
+      <h3>New task</h3>
+      <div class="spacer" style="height:8px"></div>
+      <form data-form="new-task">
+        <label class="f"><span class="lb">Title</span><input type="text" name="title" required placeholder="Verb + outcome, e.g. 'Add OTP retry limit'"></label>
+        <div class="row">
+          <label class="f" style="flex:1"><span class="lb">Type</span><select name="type"><option value="story">Story</option><option value="bug">Bug</option><option value="chore">Chore</option></select></label>
+          <label class="f" style="flex:1"><span class="lb">Points</span><select name="points"><option>1</option><option>2</option><option selected>3</option><option>5</option><option>8</option><option>13</option></select></label>
+        </div>
+        <div class="hint">${p.mode==='scrum'
+          ? 'Slice small: anything above 8 points rarely finishes inside one sprint — split it. Points feed velocity, so estimate relative to past work, not hours.'
+          : 'In Kanban, counting <b>items</b> beats counting points — keep tasks similar-sized instead of estimating precisely. Points are optional here.'}</div>
+        <button class="btn accent" type="submit">Add to backlog</button>
+      </form>
+    </div>`;
+  if (p.mode === 'kanban'){
+    return `
+    <div class="hint">This is the replenishment queue. Keep it <b>ordered by value</b> — the top card is simply the next thing pulled when board capacity frees up. Reordering the queue is how priorities change in Kanban; nothing on the board gets disturbed.</div>
+    <div class="spacer" style="height:12px"></div>
+    <div class="grid2"><div>${list || '<div class="empty">Backlog is empty.</div>'}</div>${newTaskForm}</div>`;
+  }
+  const sprints = [
+    ...(as ? [(() => { const bd = burndown(p, as); return `
+      <div class="sprint-card active">
+        <div class="row" style="justify-content:space-between"><h4>Sprint ${as.number} · ACTIVE</h4>
+        <button class="btn sm" data-action="close-sprint" data-id="${as.id}">Close sprint</button></div>
+        ${as.goal?`<p class="g">Goal: ${esc(as.goal)}</p>`:''}
+        <p class="mono small mut">${bd.donePts}/${bd.total} pts · day ${bd.dayNow}/${bd.nDays}${bd.scopeAdded?' · +'+bd.scopeAdded+' pts added after start':''}</p>
+        <div class="hint">Closing computes delivered points and the say/do ratio, asks whether the goal was met, and returns unfinished work to the backlog — exactly what velocity needs to stay honest.</div>
+      </div>`})()] : []),
+    ...plannedSprints(p).map(sp => {
+      const members = p.tasks.filter(t => t.sprintId === sp.id);
+      const pts = members.reduce((a,t)=>a+t.points,0);
+      const vel = velocitySeries(p);
+      const avgVel = vel.length ? Math.round(vel.reduce((a,v)=>a+v.delivered,0)/vel.length) : null;
+      return `
+      <div class="sprint-card">
+        <div class="row" style="justify-content:space-between"><h4>Sprint ${sp.number} · planned</h4>
+        <button class="btn sm accent" data-action="start-sprint" data-id="${sp.id}">Start sprint</button></div>
+        <label class="f" style="margin:8px 0"><span class="lb">Sprint goal</span>
+          <input type="text" data-action-change="sprint-goal" data-id="${sp.id}" value="${esc(sp.goal)}" placeholder="One sentence the review will demo against"></label>
+        <p class="mono small mut">${members.length} tasks · ${pts} pts assigned${avgVel!==null ? ' · recent velocity ≈ '+avgVel+' pts' : ''}</p>
+        <div class="hint">Commit to ${avgVel!==null ? 'about <b>'+avgVel+' pts</b> (your velocity), not what fits emotionally' : 'a modest scope — with no velocity history yet, under-commit and let data calibrate you'}. A written goal turns the sprint from a bucket of tickets into a promise.</div>
+      </div>`;})
+  ].join('');
+  const closed = closedSprints(p).map(sp => `
+    <div class="sprint-card" style="border-left-color:#C9CFC7">
+      <h4>Sprint ${sp.number} · closed</h4>
+      <p class="mono small mut">committed ${sp.summary.committedPoints} → delivered ${sp.summary.deliveredPoints} pts (say/do ${sp.summary.committedPoints?Math.round(100*sp.summary.deliveredPoints/sp.summary.committedPoints):0}%) · goal ${sp.summary.goalMet?'met ✓':'missed ✗'}${sp.summary.addedPoints?' · +'+sp.summary.addedPoints+' churn':''}</p>
+    </div>`).join('');
+  return `
+  <div class="hint">The Scrum flow, left to right: <b>1)</b> add tasks to the backlog, <b>2)</b> create a sprint and assign tasks with the dropdowns, <b>3)</b> write a goal and press Start, <b>4)</b> work the Board, <b>5)</b> Close — metrics fill themselves.</div>
+  <div class="spacer" style="height:12px"></div>
+  <div class="grid2">
+    <div>
+      <div class="row" style="justify-content:space-between;margin-bottom:10px"><h3>Backlog (${backlogTasks.length})</h3>
+      <button class="btn sm ghost" data-action="create-sprint">+ New sprint</button></div>
+      ${list || '<div class="empty">Backlog is empty — add a task on the right.</div>'}
+    </div>
+    <div>${newTaskForm}${sprints}${closed}</div>
+  </div>`;
+}
+/* ---------- metrics ---------- */
+function viewMetrics(p){
+  if (p.mode === 'kanban'){
+    const m = kanbanMetrics(p);
+    const fmt = v => v === null ? '—' : (Math.round(v*10)/10) + 'd';
+    return `
+    <div class="hint">Read flow health in this order: <b>WIP</b> (are we overloaded?), <b>item age</b> (what needs intervention today?), <b>cycle time P85</b> (what can we promise?), <b>throughput</b> (what feeds the forecast?). The CFD shows all of it at once — band thickness is WIP, a widening band is a bottleneck.</div>
+    <div class="spacer" style="height:14px"></div>
+    <div class="grid3">
+      <div class="stat ${m.wipNow > p.settings.wipDoing + p.settings.wipReview ? 'warn':''}"><div class="l">WIP now</div><div class="v">${m.wipNow}</div><div class="sub">limits: ${p.settings.wipDoing} doing + ${p.settings.wipReview} review</div></div>
+      <div class="stat"><div class="l">Cycle time P85</div><div class="v">${fmt(m.p85)}</div><div class="sub">median ${fmt(m.p50)} · quote the P85, not the average</div></div>
+      <div class="stat"><div class="l">Throughput</div><div class="v">${Math.round(m.tpAvg*10)/10}/wk</div><div class="sub">avg over last 6 weeks · ${m.blocked.length} blocked now</div></div>
+    </div>
+    <div class="chartcard"><h3>Throughput — items done per week</h3>
+      <div class="hint">This series is your forecasting fuel: "when will these 20 items be done?" = simulate against these weekly numbers and quote the 85% confidence week.</div>
+      ${svgBars(m.weeks.map(w => ({label:w.label, v:w.v})), {color:'var(--flow)'})}</div>
+    <div class="chartcard"><h3>Cumulative flow — last 28 days</h3>
+      <div class="hint">Bottom band (teal) = done, then review (amber), in progress (indigo), queued (gray). Healthy = bands rising in parallel. Widening indigo/amber = bottleneck forming. Flat teal edge = nothing shipping.</div>
+      ${svgCFD(cfdSeries(p))}</div>
+    <div class="chartcard"><h3>Work item age — in flight</h3>
+      <div class="hint">The leading indicator: anything older than your P85 (${fmt(m.p85)}) is flagged. Intervene <i>before</i> it becomes bad cycle-time data — swarm it, split it, or kill it.</div>
+      <ul class="aging" style="list-style:none">${m.aging.slice(0,8).map(a => `
+        <li><span>${a.t.key} · ${esc(a.t.title)}${a.t.blocked?' <span class="mono" style="color:var(--red)">[blocked]</span>':''}</span>
+        <span class="${m.p85 && a.age > m.p85 ? 'old':'mono small mut'}">${Math.round(a.age*10)/10}d${m.p85 && a.age > m.p85 ? ' ⚠':''}</span></li>`).join('') || '<li class="mut">Nothing in flight.</li>'}</ul></div>`;
+  }
+  const vel = velocitySeries(p);
+  const as = activeSprint(p);
+  const avgVel = vel.length ? Math.round(vel.reduce((a,v)=>a+v.delivered,0)/vel.length) : null;
+  const lastSayDo = vel.length ? Math.round(100*vel[vel.length-1].delivered/Math.max(1,vel[vel.length-1].committed)) : null;
+  return `
+  <div class="hint">The Scrum health check: <b>velocity</b> trend (is the forecast stable?), <b>say/do</b> (can promises be trusted? healthy ≈ 80–90%), <b>burndown</b> (is this sprint on track?), <b>churn</b> (is scope discipline holding?). Velocity is a planning input — the moment it becomes a target, it gets gamed.</div>
+  <div class="spacer" style="height:14px"></div>
+  <div class="grid3">
+    <div class="stat"><div class="l">Avg velocity</div><div class="v">${avgVel ?? '—'}</div><div class="sub">${vel.length} closed sprint${vel.length===1?'':'s'}${vel.length<3?' · needs 3–4 to stabilize':''}</div></div>
+    <div class="stat ${lastSayDo !== null && lastSayDo < 70 ? 'warn':''}"><div class="l">Say/do (last sprint)</div><div class="v">${lastSayDo === null ? '—' : lastSayDo + '%'}</div><div class="sub">${lastSayDo === null ? 'close a sprint to compute' : lastSayDo >= 100 ? 'suspiciously perfect — sandbagging?' : lastSayDo >= 80 ? 'healthy commitment' : 'commitments not holding'}</div></div>
+    <div class="stat"><div class="l">Goals met</div><div class="v">${vel.length ? vel.filter(v=>v.goalMet).length + '/' + vel.length : '—'}</div><div class="sub">independent of points burned</div></div>
+  </div>
+  ${vel.length ? `<div class="chartcard"><h3>Velocity — delivered pts per sprint (dashed = committed)</h3>
+    <div class="hint">A widening gap between dashed (committed) and solid (delivered) = say/do eroding. Never compare this chart across teams — points are a local currency.</div>
+    ${svgBars(vel.map(v => ({label:'S'+v.n, v:v.delivered, g:v.committed})), {color:'var(--sprint)', ghost:true})}</div>` : ''}
+  ${as ? (() => { const bd = burndown(p, as); return `<div class="chartcard"><h3>Sprint ${as.number} burndown</h3>
+    <div class="hint">Above the dashed ideal = behind; flat segment = blocked or an unupdated board; a step <i>up</i> = scope injected. ${bd.scopeAdded ? '<b>+'+bd.scopeAdded+' pts were added after start — that\'s churn, raise it in standup.</b>' : 'No scope added since start — discipline holding.'}</div>
+    ${svgBurndown(bd)}</div>`})() : '<div class="empty">No active sprint — start one to see the burndown.</div>'}`;
+}
+
+/* ---------- reports ---------- */
+function buildReport(p){
+  const d = new Date().toISOString().slice(0,10);
+  const done7 = p.tasks.filter(t => t.doneAt && Date.now() - t.doneAt < 7*DAY);
+  const blocked = p.tasks.filter(t => t.blocked && t.status !== 'done');
+  let out = `# Status report — ${p.name}\nDate: ${d} · Mode: ${p.mode === 'scrum' ? 'Sprint (Scrum)' : 'Kanban'}\n\n`;
+  if (p.mode === 'scrum'){
+    const as = activeSprint(p), vel = velocitySeries(p);
+    if (as){
+      const bd = burndown(p, as);
+      const expected = bd.total * (1 - bd.dayNow/bd.nDays);
+      const remaining = bd.actual[bd.actual.length-1];
+      out += `## Current sprint (S${as.number}, day ${bd.dayNow}/${bd.nDays})\n`;
+      if (as.goal) out += `Goal: ${as.goal}\n`;
+      out += `Progress: ${bd.donePts}/${bd.total} pts done · remaining ${remaining} vs ~${Math.round(expected)} expected → ${remaining <= expected + 2 ? 'ON TRACK' : 'AT RISK'}\n`;
+      if (bd.scopeAdded) out += `Scope churn: +${bd.scopeAdded} pts added after sprint start\n`;
+      out += '\n';
+    } else out += `## Current sprint\nNo active sprint.\n\n`;
+    if (vel.length){
+      const last = vel[vel.length-1];
+      out += `## Delivery trend\nAvg velocity: ${Math.round(vel.reduce((a,v)=>a+v.delivered,0)/vel.length)} pts over ${vel.length} sprints\n`;
+      out += `Last sprint say/do: ${Math.round(100*last.delivered/Math.max(1,last.committed))}% (${last.delivered}/${last.committed} pts) · goal ${last.goalMet?'met':'missed'}\n\n`;
+    }
+  } else {
+    const m = kanbanMetrics(p);
+    out += `## Flow health\nThroughput: ${m.weeks[5].v} items this week (6-wk avg ${Math.round(m.tpAvg*10)/10}/wk)\n`;
+    out += `Cycle time: P85 ${m.p85 ? Math.round(m.p85*10)/10 + 'd' : 'n/a'} · median ${m.p50 ? Math.round(m.p50*10)/10 + 'd' : 'n/a'}\n`;
+    out += `WIP: ${m.wipNow} in flight (limits ${p.settings.wipDoing}+${p.settings.wipReview})\n`;
+    const over = m.aging.filter(a => m.p85 && a.age > m.p85);
+    if (over.length) out += `Aging beyond P85: ${over.map(a => a.t.key).join(', ')}\n`;
+    out += '\n';
+  }
+  out += `## Shipped in the last 7 days (${done7.length})\n${done7.map(t => `- ${t.key} ${t.title}`).join('\n') || '- nothing closed this week'}\n\n`;
+  out += `## Risks & blockers (${blocked.length})\n${blocked.map(t => `- ${t.key} ${t.title} — blocked`).join('\n') || '- none flagged'}\n`;
+  return out;
+}
+function viewReports(p){
+  return `
+  <div class="hint">This generates an exec-ready markdown status: an on-track verdict computed from real board data, delivery trend, what shipped, and blockers. Paste into Slack/email or download. Rule of thumb for the audience: <b>verdict first, evidence second, asks last</b> — executives read the first three lines.</div>
+  <div class="spacer" style="height:12px"></div>
+  <div class="row" style="margin-bottom:12px">
+    <button class="btn accent" data-action="gen-report">Generate report</button>
+    <button class="btn ghost" data-action="copy-report">Copy</button>
+    <button class="btn ghost" data-action="download-report">Download .md</button>
+  </div>
+  <textarea id="reportOut" aria-label="Generated report" placeholder="Press Generate — the report is built from the live project data."></textarea>`;
+}
+
+/* ---------- settings ---------- */
+function viewSettings(p){
+  return `
+  <div class="grid2">
+    <div class="card">
+      <h3>Project settings</h3>
+      <div class="spacer" style="height:10px"></div>
+      <label class="f"><span class="lb">Name</span><input type="text" data-action-change="set-name" value="${esc(p.name)}"></label>
+      <label class="f"><span class="lb">Sprint length (days)</span><input type="number" min="7" max="28" data-action-change="set-sprintlen" value="${p.settings.sprintLen}">
+        <div class="hint">Applies to sprints started after the change.</div></label>
+      <div class="row">
+        <label class="f" style="flex:1"><span class="lb">WIP limit — in progress</span><input type="number" min="1" data-action-change="set-wipdoing" value="${p.settings.wipDoing}"></label>
+        <label class="f" style="flex:1"><span class="lb">WIP limit — in review</span><input type="number" min="1" data-action-change="set-wipreview" value="${p.settings.wipReview}"></label>
+      </div>
+      <div class="hint">Breaching a limit turns the column red on the board. Tighten limits gradually — the goal is a conversation, not a police state.</div>
+    </div>
+    <div>
+      <div class="card">
+        <h3>Data</h3>
+        <div class="spacer" style="height:10px"></div>
+        <div class="row">
+          <button class="btn ghost" data-action="export-data">Export all (JSON)</button>
+          <label class="btn ghost" style="display:inline-block">Import JSON<input type="file" id="importFile" accept=".json" style="display:none"></label>
+        </div>
+        <div class="hint">Everything lives in this browser's localStorage — clearing site data erases it. Export weekly; import restores or moves between machines. This exact JSON is also what the future cloud sync will push to Supabase.</div>
+      </div>
+      <div class="spacer" style="height:14px"></div>
+      <div class="card">
+        <h3>Cloud sync — planned</h3>
+        <p class="mut small" style="margin-top:6px">Next phase: sign-in + sync to Supabase (Postgres with row-level security), so projects follow you across devices and support sharing. The storage layer here is already isolated behind load/save, so the swap is additive. See SUPABASE_PLAN.md shipped alongside this file.</p>
+      </div>
+      <div class="spacer" style="height:14px"></div>
+      <div class="card" style="border-color:var(--red)">
+        <h3 style="color:var(--red)">Danger zone</h3>
+        <div class="spacer" style="height:8px"></div>
+        <button class="btn danger" data-action="delete-project" data-id="${p.id}">Delete this project</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ---------- task modal ---------- */
+function openTask(p, t){
+  const box = document.getElementById('modalBox');
+  const sprintSel = p.mode === 'scrum' ? `
+    <label class="f"><span class="lb">Sprint</span><select id="mSprint">
+      <option value="">— backlog —</option>
+      ${p.sprints.filter(s => s.state !== 'closed').map(s => `<option value="${s.id}" ${t.sprintId===s.id?'selected':''}>Sprint ${s.number} (${s.state})</option>`).join('')}
+    </select></label>` : '';
+  box.innerHTML = `
+    <h3>${t.key} <span class="mut" style="font-weight:400;font-size:14px">· created ${fmtD(t.createdAt)}</span></h3>
+    <label class="f"><span class="lb">Title</span><input type="text" id="mTitle" value="${esc(t.title)}"></label>
+    <label class="f"><span class="lb">Description</span><textarea id="mDesc">${esc(t.desc)}</textarea></label>
+    <div class="row">
+      <label class="f" style="flex:1"><span class="lb">Type</span><select id="mType">${['story','bug','chore'].map(x=>`<option ${t.type===x?'selected':''}>${x}</option>`).join('')}</select></label>
+      <label class="f" style="flex:1"><span class="lb">Points</span><input type="number" id="mPts" min="0" value="${t.points}"></label>
+      <label class="f" style="flex:1"><span class="lb">Status</span><select id="mStatus">${STATUSES.map(x=>`<option value="${x}" ${t.status===x?'selected':''}>${LABEL[x]}</option>`).join('')}</select></label>
+    </div>
+    ${sprintSel}
+    <label class="f" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="mBlocked" ${t.blocked?'checked':''} style="width:16px;height:16px;accent-color:var(--red)"> <span>Blocked / impediment</span></label>
+    <div class="hint">Flag blockers instead of silently waiting — they surface in metrics and in the report's risk section. ${t.startedAt && !t.doneAt ? 'This item has been in flight <b>' + daysAgo(t.startedAt) + ' days</b>.' : ''}</div>
+    <div class="spacer" style="height:8px"></div>
+    <div class="row" style="justify-content:space-between">
+      <button class="btn danger sm" data-action="delete-task" data-id="${t.id}">Delete</button>
+      <span class="row">
+        <button class="btn ghost" data-action="close-modal">Cancel</button>
+        <button class="btn accent" data-action="save-task" data-id="${t.id}">Save</button>
+      </span>
+    </div>`;
+  document.getElementById('modal').classList.add('open');
+}
+/* ================= demo data ================= */
+function seedDemo(){
+  const now = Date.now();
+  const rnd = (a,b) => a + Math.random()*(b-a);
+  /* --- kanban demo --- */
+  const k = createProject({name:'Support stream — cards', mode:'kanban', wipDoing:4, wipReview:2});
+  const titles = ['OTP retry limit for card activation','3DS challenge fails on older devices','Refund status copy unclear','Push notification dedupe','Card freeze toggle lags','Statement PDF locale bug','Limit change form validation','Failed top-up retry loop','FAQ deep links broken','ATM locator radius wrong','Chat handoff loses context','KYC photo upload timeout','Reissue flow date picker','Apple Pay provisioning error','Cashback rounding mismatch','Login rate limiter too strict','Transaction search accents','PIN change happy-path polish','Standing order edit crash','Onboarding progress bar stuck','Marketing consent copy','Currency FX tooltip','Widget balance stale','Dark mode contrast pass','Card art preview cache','Push token refresh'];
+  titles.forEach((title, i) => {
+    const created = now - rnd(3,30)*DAY;
+    const type = i % 3 === 0 ? 'bug' : (i % 5 === 0 ? 'chore' : 'story');
+    const t = createTask(k, {title, type, points: [1,2,3,5][i%4], status:'backlog'});
+    t.createdAt = created; t.history = [{ts:created, from:null, to:'backlog'}];
+    const r = Math.random();
+    if (r < .82){                                     // pulled to board
+      const pulled = created + rnd(.2,3)*DAY;
+      t.history.push({ts:pulled, from:'backlog', to:'todo'}); t.status='todo';
+      if (r < .72){                                   // started
+        const started = pulled + rnd(.2,2)*DAY;
+        t.startedAt = started; t.history.push({ts:started, from:'todo', to:'doing'}); t.status='doing';
+        if (r < .5){                                  // done
+          const rev = started + rnd(.5,4)*DAY;
+          const done = Math.min(now - rnd(0,.5)*DAY, rev + rnd(.3,3)*DAY);
+          t.history.push({ts:rev, from:'doing', to:'review'});
+          t.history.push({ts:done, from:'review', to:'done'});
+          t.status='done'; t.doneAt = done;
+        } else if (r < .62){
+          t.history.push({ts:started + rnd(.5,3)*DAY, from:'doing', to:'review'}); t.status='review';
+        }
+      }
+    }
+  });
+  k.tasks[10].blocked = true; k.tasks[16].blocked = true;
+  /* --- scrum demo --- */
+  const s = createProject({name:'Onboarding revamp', mode:'scrum', sprintLen:14});
+  const mk = (title, pts, sprintId, doneAtTs, status='done') => {
+    const t = createTask(s, {title, points:pts, status:'backlog', sprintId});
+    const created = (doneAtTs || now) - rnd(6,16)*DAY;
+    t.createdAt = created; t.history = [{ts:created, from:null, to:'backlog'}];
+    if (status !== 'backlog'){
+      const start = (doneAtTs || now) - rnd(2,6)*DAY;
+      t.startedAt = start;
+      t.history.push({ts:start - rnd(.5,2)*DAY, from:'backlog', to:'todo'});
+      t.history.push({ts:start, from:'todo', to:'doing'});
+      t.status = 'doing';
+      if (status === 'review' || status === 'done') { t.history.push({ts:start + rnd(.5,2)*DAY, from:'doing', to:'review'}); t.status='review'; }
+      if (status === 'done'){ t.history.push({ts:doneAtTs, from:'review', to:'done'}); t.status='done'; t.doneAt = doneAtTs; }
+    }
+    return t;
+  };
+  [[1, now-35*DAY, now-21*DAY, 24, 21, true, 0], [2, now-21*DAY, now-7*DAY, 26, 19, false, 5]].forEach(([n, st, en, com, del, goal, add]) => {
+    const sp = { id: uid(), number:n, goal: n===1?'Ship the new welcome flow skeleton':'KYC step reduced to two screens', state:'closed', startAt:st, endAt:en, committedIds:[], committedPoints:com, summary:{committedPoints:com, deliveredPoints:del, addedPoints:add, goalMet:goal, closedAt:en} };
+    s.sprints.push(sp);
+    let left = del;
+    while (left > 0){ const pts = Math.min(left, [3,5,8][Math.floor(rnd(0,3))]); mk('S'+n+' — '+['welcome screen','doc scan flow','address autofill','progress indicator','error states','analytics events','copy pass'][Math.floor(rnd(0,7))], pts, sp.id, st + rnd(.25,.95)*(en-st)); left -= pts; }
+  });
+  const as = { id: uid(), number:3, goal:'Cut onboarding drop-off on the phone-verify step', state:'active', startAt: now-6*DAY, endAt: now+8*DAY, committedIds:[], committedPoints:0, summary:null };
+  s.sprints.push(as);
+  const a1 = mk('Resend-code cooldown UX', 5, as.id, now-4*DAY, 'done');
+  const a2 = mk('Fallback to voice call', 5, as.id, now-1.5*DAY, 'done');
+  const a3 = mk('Error copy for wrong number', 3, as.id, null, 'review');
+  const a4 = mk('Prefill number from SIM', 5, as.id, null, 'doing'); a4.blocked = true;
+  const a5 = mk('Analytics for verify funnel', 3, as.id, null, 'doing');
+  const a6 = mk('A/B test scaffolding', 2, as.id, null, 'backlog'); setStatus(s, a6, 'todo');
+  const a7 = mk('Hotfix: crash on paste', 2, as.id, null, 'doing'); a7.addedAfterStart = true;
+  as.committedIds = [a1,a2,a3,a4,a5,a6].map(t=>t.id);
+  as.committedPoints = 23;
+  mk('Passkey sign-in spike', 8, null, null, 'backlog');
+  mk('Referral code at signup', 5, null, null, 'backlog');
+  mk('Localize onboarding VN', 5, null, null, 'backlog');
+  S.activeProjectId = null;
+  toast('Demo projects loaded');
+}
+
+/* ================= drag & drop ================= */
+function bindDnD(p){
+  app.querySelectorAll('.task[draggable]').forEach(el => {
+    el.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', el.dataset.task); e.dataTransfer.effectAllowed = 'move'; });
+  });
+  app.querySelectorAll('[data-drop]').forEach(col => {
+    col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('over'); });
+    col.addEventListener('dragleave', () => col.classList.remove('over'));
+    col.addEventListener('drop', e => {
+      e.preventDefault(); col.classList.remove('over');
+      const t = taskById(p, e.dataTransfer.getData('text/plain'));
+      if (t){ setStatus(p, t, col.dataset.drop); render(); }
+    });
+  });
+}
+
+/* ================= event delegation ================= */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (!el) return;
+  const act = el.dataset.action, id = el.dataset.id, p = proj();
+  const A = {
+    'nav-home': () => { S.activeProjectId = null; render(); },
+    'open-project': () => { S.activeProjectId = id; S.tab = 'board'; render(); },
+    'tab': () => { S.tab = id; render(); },
+    'toggle-coach': () => { S.coach = !S.coach; render(); },
+    'seed-demo': () => { seedDemo(); render(); },
+    'pick-mode': () => {                              // in create form (no re-render: keep typed values)
+      const seg = el.closest('.seg');
+      seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b===el)));
+      el.closest('form').querySelector('[name=mode]').value = el.dataset.m;
+    },
+    'set-mode': () => {
+      if (!p || p.mode === el.dataset.m) return;
+      if (el.dataset.m === 'kanban' && activeSprint(p) && !confirm('Switching to Kanban: the active sprint stays recorded, but the board becomes continuous flow with WIP limits. Continue?')) return;
+      p.mode = el.dataset.m; toast('Mode: ' + (p.mode==='scrum'?'Sprint':'Kanban')); render();
+    },
+    'open-task': () => { if (p) openTask(p, taskById(p, id)); },
+    'close-modal': () => document.getElementById('modal').classList.remove('open'),
+    'move-left': () => { moveTask(p, taskById(p,id), -1); render(); },
+    'move-right': () => { moveTask(p, taskById(p,id), 1); render(); },
+    'pull-task': () => { setStatus(p, taskById(p,id), 'todo'); toast('Pulled to board'); render(); },
+    'create-sprint': () => { createSprint(p); render(); },
+    'start-sprint': () => { startSprint(p, p.sprints.find(s=>s.id===id)); render(); },
+    'close-sprint': () => { closeSprint(p, p.sprints.find(s=>s.id===id)); render(); },
+    'save-task': () => {
+      const t = taskById(p, id), g = x => document.getElementById(x);
+      t.title = g('mTitle').value.trim() || t.title; t.desc = g('mDesc').value;
+      t.type = g('mType').value; t.points = +g('mPts').value || 0; t.blocked = g('mBlocked').checked;
+      const st = g('mStatus').value; if (st !== t.status) setStatus(p, t, st);
+      const sSel = g('mSprint');
+      if (sSel){
+        const nsid = sSel.value || null;
+        if (nsid !== t.sprintId){
+          t.sprintId = nsid;
+          const as = activeSprint(p);
+          t.addedAfterStart = !!(nsid && as && nsid === as.id);
+        }
+      }
+      document.getElementById('modal').classList.remove('open'); render();
+    },
+    'delete-task': () => { if (confirm('Delete this task?')){ p.tasks = p.tasks.filter(t => t.id !== id); document.getElementById('modal').classList.remove('open'); render(); } },
+    'delete-project': () => { if (confirm('Delete project "' + p.name + '" and all its data?')){ S.projects = S.projects.filter(x => x.id !== p.id); S.activeProjectId = null; render(); } },
+    'gen-report': () => { document.getElementById('reportOut').value = buildReport(p); },
+    'copy-report': () => {
+      const v = document.getElementById('reportOut').value || buildReport(p);
+      document.getElementById('reportOut').value = v;
+      (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(() => toast('Copied'), () => { document.getElementById('reportOut').select(); document.execCommand('copy'); toast('Copied'); });
+    },
+    'download-report': () => {
+      const v = document.getElementById('reportOut').value || buildReport(p);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([v], {type:'text/markdown'}));
+      a.download = p.key.toLowerCase() + '-status-' + new Date().toISOString().slice(0,10) + '.md';
+      a.click(); URL.revokeObjectURL(a.href);
+    },
+    'export-data': () => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(S, null, 2)], {type:'application/json'}));
+      a.download = 'helm-backup-' + new Date().toISOString().slice(0,10) + '.json';
+      a.click(); URL.revokeObjectURL(a.href);
+    },
+  };
+  if (A[act]) A[act]();
+});
+
+document.addEventListener('change', e => {
+  const p = proj();
+  const el = e.target.closest('[data-action-change]');
+  if (el && p){
+    const t = taskById(p, el.dataset.id);
+    const map = {
+      'assign-sprint': () => { const nsid = el.value || null; t.sprintId = nsid; const as = activeSprint(p); t.addedAfterStart = !!(nsid && as && nsid === as.id); if (t.addedAfterStart && t.status==='backlog') setStatus(p,t,'todo'); render(); },
+      'sprint-goal': () => { p.sprints.find(s=>s.id===el.dataset.id).goal = el.value; save(); },
+      'set-name': () => { p.name = el.value.trim() || p.name; save(); },
+      'set-sprintlen': () => { p.settings.sprintLen = Math.max(7, +el.value || 14); save(); },
+      'set-wipdoing': () => { p.settings.wipDoing = Math.max(1, +el.value || 4); render(); },
+      'set-wipreview': () => { p.settings.wipReview = Math.max(1, +el.value || 2); render(); },
+    };
+    if (map[el.dataset.actionChange]) map[el.dataset.actionChange]();
+    return;
+  }
+  if (e.target.id === 'importFile' && e.target.files[0]){
+    const r = new FileReader();
+    r.onload = () => { try {
+      const data = JSON.parse(r.result);
+      if (!Array.isArray(data.projects)) throw 0;
+      S = data; S.activeProjectId = null; toast('Imported'); render();
+    } catch(err){ toast('Import failed: not a valid backup'); } };
+    r.readAsText(e.target.files[0]);
+  }
+});
+
+document.addEventListener('submit', e => {
+  const f = e.target.closest('[data-form]'); if (!f) return;
+  e.preventDefault();
+  const p = proj(), fd = new FormData(f);
+  if (f.dataset.form === 'create-project'){
+    createProject({ name: fd.get('name').trim(), mode: fd.get('mode'),
+      sprintLen: +fd.get('sprintLen'), wipDoing: +fd.get('wipDoing') });
+    toast('Project created'); render();
+  }
+  if (f.dataset.form === 'new-task' && p){
+    const title = fd.get('title').trim(); if (!title) return;
+    createTask(p, { title, type: fd.get('type'), points: fd.get('points') });
+    toast('Added to backlog'); render();
+  }
+  if (f.dataset.form === 'quick-task' && p){
+    const title = fd.get('title').trim(); if (!title) return;
+    const t = createTask(p, { title, status:'backlog' });
+    setStatus(p, t, 'todo');
+    render();
+  }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.getElementById('modal').classList.remove('open'); });
+
+render();
+</script>
+</body>
+</html>
