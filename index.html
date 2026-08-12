@@ -4,166 +4,196 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Helm — project management portal</title>
-<meta name="description" content="A coached project management portal: Sprint or Kanban mode per project, live delivery metrics, and one-click status reports. Data stays in your browser.">
+<meta name="description" content="A coached project management portal: Sprint or Kanban mode per project, live delivery metrics, and one-click status reports. English / Tiếng Việt.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Public+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Public+Sans:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --paper:#F6F7F4; --card:#FFFFFF; --ink:#1B2421; --muted:#5B655F; --line:#E1E5DE;
-  --sprint:#4A43B5; --sprint-soft:#ECEBF9; --sprint-deep:#322D7E;
-  --flow:#0B7A66; --flow-soft:#E0F1EB; --flow-deep:#0A5145;
-  --amber:#98620A; --amber-soft:#FAF0DB; --red:#B4432A; --red-soft:#F9E7E2;
-  --accent:#1B2421; --accent-soft:#EDEEEA; --accent-deep:#1B2421;
+  --paper:#F7F8F5; --card:#FFFFFF; --ink:#1B2421; --muted:#5E6862; --line:#E3E7E0; --line2:#EDF0EA;
+  --sprint:#4A43B5; --sprint-soft:#EEEDFB; --sprint-deep:#332E82;
+  --flow:#0B7A66; --flow-soft:#E2F3ED; --flow-deep:#0A5145;
+  --amber:#98620A; --amber-soft:#FAF0DB; --red:#B4432A; --red-soft:#FAEAE5;
+  --accent:#1B2421; --accent-soft:#EEF0EC; --accent-deep:#1B2421;
   --disp:"Bricolage Grotesque",system-ui,sans-serif;
   --body:"Public Sans",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,monospace;
   --r:10px; --rlg:16px;
+  --sh1:0 1px 2px rgba(27,36,33,.05), 0 1px 1px rgba(27,36,33,.03);
+  --sh2:0 10px 28px -10px rgba(27,36,33,.16), 0 2px 6px -2px rgba(27,36,33,.08);
+  --sh3:0 24px 60px -16px rgba(27,36,33,.25);
 }
 body[data-mode="scrum"]{--accent:var(--sprint);--accent-soft:var(--sprint-soft);--accent-deep:var(--sprint-deep)}
 body[data-mode="kanban"]{--accent:var(--flow);--accent-soft:var(--flow-soft);--accent-deep:var(--flow-deep)}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+::selection{background:var(--accent-soft)}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;min-height:100vh}
+body{background-image:radial-gradient(1200px 400px at 70% -10%, rgba(74,67,181,.05), transparent 60%),radial-gradient(1000px 380px at 10% -10%, rgba(11,122,102,.05), transparent 60%)}
 .wrap{max-width:1160px;margin:0 auto;padding:0 20px}
-button{font:inherit;cursor:pointer}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+button{font:inherit;cursor:pointer;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
 h1,h2,h3{font-family:var(--disp);letter-spacing:-.01em}
-h2{font-size:clamp(23px,3vw,30px);font-weight:600}
-h3{font-size:18px;font-weight:600}
+h2{font-size:clamp(23px,3vw,31px);font-weight:600}
+h3{font-size:17.5px;font-weight:600}
+@media (prefers-reduced-motion: no-preference){
+  button,.task,.pcard,.card,input,select,textarea,.stat,.col,.tabs button{transition:box-shadow .16s ease,transform .16s ease,border-color .16s ease,background-color .16s ease,color .16s ease,opacity .16s ease}
+}
 
 /* ---------- header ---------- */
-header{position:sticky;top:0;z-index:40;background:rgba(246,247,244,.93);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:40;background:rgba(247,248,245,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .bar{display:flex;align-items:center;gap:14px;padding:11px 0;flex-wrap:wrap}
-.brand{font-family:var(--mono);font-size:14px;display:flex;align-items:center;gap:9px;border:0;background:none;color:var(--ink)}
-.brand .mark{display:inline-block;width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--sprint) 49.6%,var(--flow) 50.4%)}
+.brand{font-family:var(--mono);font-size:14px;display:flex;align-items:center;gap:10px;border:0;background:none}
+.brand .mark{display:inline-block;width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--sprint) 49.5%,var(--flow) 50.5%);box-shadow:var(--sh1)}
+.brand:hover{opacity:.75}
 .bar .grow{flex:1}
-.coach-switch{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
-.switch{position:relative;width:40px;height:22px;background:#CBD1C9;border-radius:999px;border:0;transition:background .15s}
-.switch::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s}
+.lang{display:inline-flex;border:1px solid var(--line);border-radius:999px;background:var(--card);padding:2px;gap:2px;box-shadow:var(--sh1)}
+.lang button{font-family:var(--mono);font-size:11.5px;border:0;background:none;color:var(--muted);padding:4px 10px;border-radius:999px}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.coach-switch{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.switch{position:relative;width:40px;height:22px;background:#CBD1C9;border-radius:999px;border:0}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:var(--sh1);transition:transform .15s}
 .switch[aria-checked="true"]{background:var(--accent)}
 .switch[aria-checked="true"]::after{transform:translateX(18px)}
-@media (prefers-reduced-motion: reduce){.switch,.switch::after{transition:none}}
+@media (prefers-reduced-motion: reduce){.switch::after{transition:none}}
 
 /* ---------- generic ---------- */
-main{padding:28px 0 80px}
-.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--rlg);padding:20px}
+main{padding:30px 0 80px}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.15em;text-transform:uppercase;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--rlg);padding:22px;box-shadow:var(--sh1)}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.btn{font-family:var(--mono);font-size:13px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);padding:8px 16px;border-radius:999px}
-.btn:hover{opacity:.85}
-.btn.ghost{background:transparent;color:var(--ink)}
+.btn{font-family:var(--mono);font-size:13px;border:1px solid var(--ink);background:var(--ink);color:var(--paper);padding:8px 17px;border-radius:999px;box-shadow:var(--sh1)}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--sh2)}
+.btn:active{transform:translateY(0);box-shadow:var(--sh1)}
+.btn.ghost{background:var(--card);color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--ink)}
 .btn.accent{background:var(--accent);border-color:var(--accent);color:#fff}
-.btn.danger{background:transparent;color:var(--red);border-color:var(--red)}
-.btn.sm{padding:4px 11px;font-size:12px}
-.mut{color:var(--muted)} .small{font-size:13.5px}
-.mono{font-family:var(--mono)}
+.btn.danger{background:var(--card);color:var(--red);border-color:var(--red)}
+.btn.sm{padding:4px 12px;font-size:12px;box-shadow:none}
+.mut{color:var(--muted)} .small{font-size:13.5px} .mono{font-family:var(--mono)}
 .spacer{height:20px}
-input[type="text"],input[type="number"],textarea,select{font:inherit;font-size:14.5px;color:var(--ink);background:#FCFDFB;border:1px solid var(--line);border-radius:8px;padding:8px 11px;width:100%}
+input[type="text"],input[type="number"],textarea,select{font:inherit;font-size:14.5px;color:var(--ink);background:#FCFDFB;border:1px solid var(--line);border-radius:9px;padding:8px 12px;width:100%}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
 textarea{min-height:74px;resize:vertical}
-label.f{display:block;margin-bottom:12px}
-label.f .lb{display:block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+label.f{display:block;margin-bottom:13px}
+label.f .lb{display:block;font-family:var(--mono);font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 
 /* ---------- coach hints ---------- */
-.hint{display:flex;gap:9px;background:var(--accent-soft);border-radius:9px;padding:9px 12px;margin-top:8px;font-size:13.5px;color:var(--accent-deep);line-height:1.55}
-.hint::before{content:"?";flex:none;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-family:var(--mono);font-size:12px;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.hint{display:flex;gap:10px;background:linear-gradient(0deg,var(--accent-soft),var(--accent-soft));border:1px solid color-mix(in srgb,var(--accent) 14%, transparent);border-radius:10px;padding:10px 13px;margin-top:9px;font-size:13.5px;color:var(--accent-deep);line-height:1.55}
+.hint::before{content:"✳";flex:none;width:19px;height:19px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;display:flex;align-items:center;justify-content:center;margin-top:2px}
 body.coach-off .hint{display:none}
 
-/* ---------- mode segmented control ---------- */
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;background:var(--card);padding:3px;gap:3px}
-.seg button{font-family:var(--mono);font-size:12.5px;border:0;background:none;color:var(--muted);padding:6px 14px;border-radius:999px}
-.seg button[aria-pressed="true"]{color:#fff}
+/* ---------- segmented ---------- */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;background:var(--card);padding:3px;gap:3px;box-shadow:var(--sh1)}
+.seg button{font-family:var(--mono);font-size:12.5px;border:0;background:none;color:var(--muted);padding:6px 15px;border-radius:999px}
+.seg button[aria-pressed="true"]{color:#fff;box-shadow:var(--sh1)}
 .seg button[data-m="scrum"][aria-pressed="true"]{background:var(--sprint)}
 .seg button[data-m="kanban"][aria-pressed="true"]{background:var(--flow)}
 
 /* ---------- project header & tabs ---------- */
-.phead{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px}
-.phead h2{margin-right:4px}
+.phead{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
 .pill{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;border-radius:999px;padding:3px 11px;background:var(--accent-soft);color:var(--accent-deep)}
-.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:22px;overflow-x:auto;scrollbar-width:none}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:22px;overflow-x:auto;scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
-.tabs button{font-family:var(--mono);font-size:13px;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);padding:9px 13px;white-space:nowrap}
+.tabs button{font-family:var(--mono);font-size:13px;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);padding:9px 14px;white-space:nowrap;border-radius:8px 8px 0 0}
+.tabs button:hover{background:var(--line2);color:var(--ink)}
 .tabs button[aria-selected="true"]{color:var(--accent-deep);border-bottom-color:var(--accent)}
 
-/* ---------- home / project cards ---------- */
-.pcard{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:var(--rlg);padding:18px 20px}
-.pcard:hover{border-color:var(--accent)}
+/* ---------- home ---------- */
+.pcard{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:var(--rlg);padding:18px 20px;box-shadow:var(--sh1)}
+.pcard:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:var(--sh2)}
 .pcard .nm{font-family:var(--disp);font-weight:600;font-size:19px}
-.pcard .meta{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-top:4px}
+.pcard .meta{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-top:5px;display:block}
+.pcard .modep{display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;border-radius:999px;padding:2px 9px;margin-left:8px;vertical-align:2px}
+.pcard .modep.scrum{background:var(--sprint-soft);color:var(--sprint-deep)}
+.pcard .modep.kanban{background:var(--flow-soft);color:var(--flow-deep)}
 
 /* ---------- board ---------- */
 .board{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;align-items:start}
-.col{background:#F0F2ED;border:1px solid var(--line);border-radius:var(--rlg);padding:10px;min-height:120px}
-.col.over{outline:2px dashed var(--accent);outline-offset:-2px}
-.col.breach{background:var(--red-soft);border-color:var(--red)}
-.col h4{font-family:var(--mono);font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);padding:2px 4px 8px;display:flex;justify-content:space-between}
-.col.breach h4 .cnt{color:var(--red);font-weight:500}
-.task{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:10px 11px;margin-bottom:8px;cursor:grab}
+.col{background:linear-gradient(180deg,#F2F4EF, #F0F2ED);border:1px solid var(--line);border-radius:var(--rlg);padding:10px;min-height:130px}
+.col.over{outline:2px dashed var(--accent);outline-offset:-3px;background:var(--accent-soft)}
+.col.breach{background:var(--red-soft);border-color:#E4B4A7}
+.col h4{font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);padding:3px 4px 9px;display:flex;justify-content:space-between;align-items:center}
+.col h4 .cnt{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:0 8px;font-size:11px}
+.col.breach h4 .cnt{color:#fff;background:var(--red);border-color:var(--red);font-weight:500}
+.task{background:var(--card);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:11px;padding:10px 12px;margin-bottom:8px;cursor:grab;box-shadow:var(--sh1)}
+.task:hover{transform:translateY(-1px);box-shadow:var(--sh2);border-color:var(--accent);border-left-color:var(--accent)}
+.task.dragging{opacity:.45}
 .task .tt{font-size:14px;font-weight:600;line-height:1.35}
-.task .tm{display:flex;gap:8px;align-items:center;font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:6px;flex-wrap:wrap}
+.task .tm{display:flex;gap:8px;align-items:center;font-family:var(--mono);font-size:11.5px;color:var(--muted);margin-top:7px;flex-wrap:wrap}
 .task .tm .dot{width:8px;height:8px;border-radius:50%;flex:none}
 .dot.story{background:var(--flow)} .dot.bug{background:var(--red)} .dot.chore{background:#8A93A5}
-.task .pts{background:var(--accent-soft);color:var(--accent-deep);border-radius:6px;padding:0 6px}
-.task .blocked{background:var(--red-soft);color:var(--red);border-radius:6px;padding:0 6px}
-.task .added{background:var(--amber-soft);color:var(--amber);border-radius:6px;padding:0 6px}
+.task .pts{background:var(--accent-soft);color:var(--accent-deep);border-radius:6px;padding:0 7px}
+.task .blocked{background:var(--red-soft);color:var(--red);border-radius:6px;padding:0 7px}
+.task .added{background:var(--amber-soft);color:var(--amber);border-radius:6px;padding:0 7px}
 .task .mv{display:flex;gap:4px;margin-left:auto}
-.task .mv button{border:1px solid var(--line);background:#fff;border-radius:6px;font-family:var(--mono);font-size:12px;padding:1px 8px;color:var(--muted)}
-.task .mv button:hover{color:var(--ink);border-color:var(--ink)}
+.task .mv button{border:1px solid var(--line);background:var(--card);border-radius:7px;font-family:var(--mono);font-size:12px;padding:1px 9px;color:var(--muted)}
+.task .mv button:hover{color:var(--ink);border-color:var(--ink);transform:translateY(-1px)}
 .addform{display:flex;gap:6px;margin-top:2px}
-.addform input{font-size:13.5px;padding:6px 9px}
-.empty{border:1px dashed var(--line);border-radius:var(--rlg);padding:30px;text-align:center;color:var(--muted);font-size:14.5px;background:var(--card)}
+.addform input{font-size:13.5px;padding:6px 10px;background:var(--card)}
+.empty{border:1.5px dashed var(--line);border-radius:var(--rlg);padding:34px 26px;text-align:center;color:var(--muted);font-size:14.5px;background:var(--card)}
 
 /* ---------- backlog & sprints ---------- */
-.bl-item{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px;margin-bottom:8px;flex-wrap:wrap}
-.bl-item .tt{font-size:14px;font-weight:600;flex:1;min-width:140px}
-.bl-item select{width:auto;font-size:12.5px;padding:4px 8px}
-.sprint-card{border:1px solid var(--line);border-left:4px solid var(--sprint);border-radius:var(--rlg);background:var(--card);padding:16px;margin-bottom:12px}
+.bl-item{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:9px 13px;margin-bottom:8px;flex-wrap:wrap;box-shadow:var(--sh1)}
+.bl-item:hover{border-color:var(--accent)}
+.bl-item .tt{font-size:14px;font-weight:600;flex:1;min-width:140px;background:none;border:0;text-align:left;font-family:inherit;cursor:pointer;padding:0}
+.bl-item select{width:auto;font-size:12.5px;padding:4px 9px}
+.sprint-card{border:1px solid var(--line);border-left:4px solid var(--sprint);border-radius:var(--rlg);background:var(--card);padding:17px;margin-bottom:12px;box-shadow:var(--sh1)}
 .sprint-card.active{border-left-color:var(--flow)}
-.sprint-card h4{font-family:var(--mono);font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+.sprint-card h4{font-family:var(--mono);font-size:12.5px;letter-spacing:.06em;text-transform:uppercase}
 .sprint-card .g{font-size:14px;color:var(--muted);margin:4px 0 8px}
-.progress{height:8px;background:#EDEFE9;border-radius:99px;overflow:hidden;margin:8px 0}
-.progress i{display:block;height:100%;background:var(--accent)}
+.progress{height:8px;background:var(--line2);border-radius:99px;overflow:hidden;margin:9px 0}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 70%, #fff));border-radius:99px}
 
 /* ---------- metrics ---------- */
-.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--rlg);padding:16px 18px}
-.stat .v{font-family:var(--disp);font-weight:700;font-size:30px;line-height:1.1}
-.stat .l{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--rlg);padding:16px 18px;box-shadow:var(--sh1);position:relative;overflow:hidden}
+.stat::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),transparent 70%)}
+.stat .v{font-family:var(--disp);font-weight:700;font-size:31px;line-height:1.15;color:var(--accent-deep)}
+.stat .l{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .stat .sub{font-size:13px;color:var(--muted);margin-top:3px}
-.stat.warn .v{color:var(--red)}
+.stat.warn .v{color:var(--red)} .stat.warn::before{background:linear-gradient(90deg,var(--red),transparent 70%)}
 svg text{font-family:var(--mono);font-size:11px;fill:var(--muted)}
-svg .axis{stroke:#C9CFC7;stroke-width:1}
-.chartcard{background:var(--card);border:1px solid var(--line);border-radius:var(--rlg);padding:18px;margin-top:16px}
-.aging li{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:6px 0;border-bottom:1px dashed var(--line)}
+svg .axis{stroke:#CBD1C9;stroke-width:1}
+.chartcard{background:var(--card);border:1px solid var(--line);border-radius:var(--rlg);padding:18px;margin-top:16px;box-shadow:var(--sh1)}
+.aging{list-style:none}
+.aging li{display:flex;justify-content:space-between;gap:10px;font-size:14px;padding:7px 0;border-bottom:1px dashed var(--line)}
 .aging li:last-child{border:0}
 .aging .old{color:var(--red);font-family:var(--mono);font-size:12.5px}
 
 /* ---------- reports ---------- */
-#reportOut{font-family:var(--mono);font-size:13px;min-height:340px;white-space:pre;line-height:1.6}
+#reportOut{font-family:var(--mono);font-size:13px;min-height:340px;white-space:pre;line-height:1.65}
 
 /* ---------- modal ---------- */
 #modal{position:fixed;inset:0;display:none;z-index:60}
 #modal.open{display:block}
-#modal .scrim{position:absolute;inset:0;background:rgba(27,36,33,.45)}
-#modal .box{position:relative;max-width:560px;margin:6vh auto;background:var(--card);border-radius:var(--rlg);padding:24px;max-height:86vh;overflow:auto}
+#modal .scrim{position:absolute;inset:0;background:rgba(27,36,33,.42);backdrop-filter:blur(2px)}
+#modal .box{position:relative;max-width:560px;margin:6vh auto;background:var(--card);border-radius:18px;padding:26px;max-height:86vh;overflow:auto;box-shadow:var(--sh3)}
+@media (prefers-reduced-motion: no-preference){
+  #modal.open .box{animation:pop .18s ease-out}
+  @keyframes pop{from{transform:translateY(10px) scale(.985);opacity:0}to{transform:none;opacity:1}}
+}
 #modal .box h3{margin-bottom:14px}
 
 /* ---------- toast ---------- */
-#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--ink);color:var(--paper);
-  font-family:var(--mono);font-size:13px;padding:10px 18px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:70}
-#toast.show{opacity:1}
+#toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(6px);background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:13px;padding:10px 20px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:70;box-shadow:var(--sh2)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-footer{border-top:1px solid var(--line);padding:22px 0 44px;color:var(--muted);font-size:13px;font-family:var(--mono)}
+footer{border-top:1px solid var(--line);padding:22px 0 46px;color:var(--muted);font-size:12.5px;font-family:var(--mono)}
 @media(max-width:900px){.board{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:1fr 1fr}}
-@media(max-width:640px){.board,.grid2,.grid3{grid-template-columns:1fr}}
+@media(max-width:640px){.board,.grid2,.grid3{grid-template-columns:1fr}.bar{gap:10px}}
 </style>
 </head>
 <body>
 <header>
   <div class="wrap bar">
-    <button class="brand" data-action="nav-home"><span class="mark"></span> helm · pm portal</button>
+    <button class="brand" data-action="nav-home"><span class="mark"></span> helm</button>
     <div class="grow"></div>
-    <div class="coach-switch">coach hints
+    <div class="lang" role="group" aria-label="Language">
+      <button data-action="set-lang" data-lang="en" aria-pressed="true">EN</button>
+      <button data-action="set-lang" data-lang="vi" aria-pressed="false">VI</button>
+    </div>
+    <div class="coach-switch"><span id="coachLabel">coach hints</span>
       <button class="switch" id="coachSwitch" role="switch" aria-checked="true" aria-label="Toggle coach hints" data-action="toggle-coach"></button>
     </div>
   </div>
@@ -171,28 +201,218 @@ footer{border-top:1px solid var(--line);padding:22px 0 44px;color:var(--muted);f
 <main><div class="wrap" id="app"></div></main>
 <div id="modal"><div class="scrim" data-action="close-modal"></div><div class="box" id="modalBox"></div></div>
 <div id="toast" role="status"></div>
-<footer><div class="wrap">helm · single-file portal · data lives in this browser (localStorage) — export regularly · cloud sync via Supabase: see plan</div></footer>
+<footer><div class="wrap" id="footTxt"></div></footer>
 <script>
+/* ================= i18n ================= */
+const I18N = {
+en: {
+  coach:'coach hints', foot:'helm · single-file portal · data lives in this browser (localStorage) — export regularly · cloud sync via Supabase: see plan', title:'Helm — project management portal',
+  ws:'Workspace', yourProjects:'Your projects', homeSub:'Everything is stored in this browser. Use export in project settings for backups.',
+  h_home:'Step 1 of everything: a project is a container with a <b>delivery mode</b>. Pick <b>Sprint</b> when stakeholders need date commitments and a demo cadence; pick <b>Kanban</b> when priorities churn and work should flow continuously. You can switch later — history is kept.',
+  createProject:'Create a project', pname:'Project name', pnamePh:'e.g. Onboarding revamp',
+  h_name:'Name the outcome, not the team — "Onboarding revamp" ages better than "Team A backlog". A 3–4 letter key for ticket IDs is derived automatically.',
+  dmode:'Delivery mode',
+  h_mode:'<b>Sprint:</b> fixed timebox, committed scope, velocity forecasting — predictability for stakeholders. <b>Kanban:</b> continuous pull, WIP limits, cycle-time expectations — flexibility for fast-churning work.',
+  slen:'Sprint length (days)', h_len:'Two weeks is the default for a reason: short enough to adapt, long enough to finish real stories.',
+  wipDoing:'WIP limit — in progress', h_wip:"Start near team size + 1, tighten from data. Little's Law: less parallel work = faster finishing.",
+  btnCreate:'Create project', demoTitle:'Explore with demo data',
+  demoSub:'Loads two projects with three weeks of realistic history — one in each mode — so every chart and report has something to show.',
+  btnDemo:'Load demo projects',
+  h_demo:'Good first move: open the demo, break things, then delete it in Settings. Metrics need history to be meaningful — an empty project shows empty charts, which is correct but unimpressive.',
+  noProjects:'No projects yet — create one below, or load the demo data to explore with realistic history.',
+  meta:'{0} tasks · {1} done',
+  tb_board:'Board', tb_backlogS:'Backlog & sprints', tb_backlogK:'Backlog', tb_metrics:'Metrics', tb_reports:'Reports', tb_settings:'Settings',
+  h_modeSwitch:'Mode changes the operating system, not the data: <b>Sprint</b> shows only the active sprint on the board and unlocks velocity, burndown and say/do. <b>Kanban</b> shows continuous flow with WIP limits and unlocks cycle time, throughput and the CFD. Running sprints <i>with</i> WIP limits is Scrumban — a legitimate hybrid.',
+  st_backlog:'Backlog', st_todo:'To do', st_doing:'In progress', st_review:'In review', st_done:'Done',
+  noSprint:'No active sprint.', goBacklog:'Go to Backlog & sprints',
+  h_board_empty:'In Sprint mode the board shows only committed work. The flow: refine the backlog → assign tasks to a planned sprint → press <b>Start sprint</b>. Then this board becomes your daily standup surface.',
+  h_board_kanban:"Drag cards (or use ‹ ›) to move work. A <b>red column</b> means the WIP limit is breached — that's not an error, it's the daily conversation: finish something before starting something. Cards track their age automatically; cycle time starts when a card enters In progress.",
+  h_board_scrum:'This is the committed scope — protect it. New urgent work goes through the backlog and counts as <b>scope churn</b> (amber "added" tag). Move a card to Done only when it meets your definition of done; the burndown and say/do ratio are computed from these moves.',
+  sprintBar:'Sprint {0} · day {1} of {2}', ptsDone:'{0}/{1} pts done', plusAdded:'+{0} added', goal:'Goal',
+  newCard:'+ new card', add:'add',
+  h_backlog_kanban:'This is the replenishment queue. Keep it <b>ordered by value</b> — the top card is simply the next thing pulled when board capacity frees up. Reordering the queue is how priorities change in Kanban; nothing on the board gets disturbed.',
+  h_scrum_flow:'The Scrum flow, left to right: <b>1)</b> add tasks to the backlog, <b>2)</b> create a sprint and assign tasks with the dropdowns, <b>3)</b> write a goal and press Start, <b>4)</b> work the Board, <b>5)</b> Close — metrics fill themselves.',
+  backlogN:'Backlog ({0})', newSprint:'+ New sprint', newTask:'New task', tTitle:'Title', tTitlePh:"Verb + outcome, e.g. 'Add OTP retry limit'",
+  tType:'Type', ty_story:'Story', ty_bug:'Bug', ty_chore:'Chore', tPoints:'Points', addBacklog:'Add to backlog',
+  h_points_scrum:'Slice small: anything above 8 points rarely finishes inside one sprint — split it. Points feed velocity, so estimate relative to past work, not hours.',
+  h_points_kanban:'In Kanban, counting <b>items</b> beats counting points — keep tasks similar-sized instead of estimating precisely. Points are optional here.',
+  emptyBacklog:'Backlog is empty.', emptyBacklogR:'Backlog is empty — add a task on the right.',
+  optBacklog:'— backlog —', optPlanned:'Sprint {0} (planned)', optActive:'Sprint {0} (active!)', pullBoard:'pull to board →',
+  spActive:'Sprint {0} · ACTIVE', spPlanned:'Sprint {0} · planned', spClosed:'Sprint {0} · closed',
+  btnStart:'Start sprint', btnClose:'Close sprint', goalLb:'Sprint goal', goalPh:'One sentence the review will demo against',
+  spMeta:'{0} tasks · {1} pts assigned', velRecent:' · recent velocity ≈ {0} pts',
+  h_sprint_close:'Closing computes delivered points and the say/do ratio, asks whether the goal was met, and returns unfinished work to the backlog — exactly what velocity needs to stay honest.',
+  h_commitVel:'Commit to about <b>{0} pts</b> (your velocity), not what fits emotionally. A written goal turns the sprint from a bucket of tickets into a promise.',
+  h_commitNew:'With no velocity history yet, under-commit and let data calibrate you. A written goal turns the sprint from a bucket of tickets into a promise.',
+  spDayMeta:'{0}/{1} pts · day {2}/{3}', spChurn:' · +{0} pts added after start',
+  closedLine:'committed {0} → delivered {1} pts (say/do {2}%) · goal {3}', met:'met ✓', missed:'missed ✗', churnSuffix:' · +{0} churn',
+  h_metrics_kanban:'Read flow health in this order: <b>WIP</b> (are we overloaded?), <b>item age</b> (what needs intervention today?), <b>cycle time P85</b> (what can we promise?), <b>throughput</b> (what feeds the forecast?). The CFD shows all of it at once — band thickness is WIP, a widening band is a bottleneck.',
+  m_wip:'WIP now', m_wipSub:'limits: {0} doing + {1} review', m_ct:'Cycle time P85', m_ctSub:'median {0} · quote the P85, not the average',
+  m_tp:'Throughput', m_tpSub:'avg over last 6 weeks · {0} blocked now', perWk:'/wk',
+  ch_tp:'Throughput — items done per week',
+  h_tp:'This series is your forecasting fuel: "when will these 20 items be done?" = simulate against these weekly numbers and quote the 85% confidence week.',
+  ch_cfd:'Cumulative flow — last 28 days',
+  h_cfd:'Bottom band (teal) = done, then review (amber), in progress (indigo), queued (gray). Healthy = bands rising in parallel. Widening indigo/amber = bottleneck forming. Flat teal edge = nothing shipping.',
+  ch_age:'Work item age — in flight',
+  h_age:'The leading indicator: anything older than your P85 ({0}) is flagged. Intervene <i>before</i> it becomes bad cycle-time data — swarm it, split it, or kill it.',
+  nothingFlight:'Nothing in flight.', blockedTag:'[blocked]', addedTag:'added',
+  h_metrics_scrum:'The Scrum health check: <b>velocity</b> trend (is the forecast stable?), <b>say/do</b> (can promises be trusted? healthy ≈ 80–90%), <b>burndown</b> (is this sprint on track?), <b>churn</b> (is scope discipline holding?). Velocity is a planning input — the moment it becomes a target, it gets gamed.',
+  m_vel:'Avg velocity', m_velSub:'{0} closed sprint(s)', m_velStab:' · needs 3–4 to stabilize',
+  m_sd:'Say/do (last sprint)', sdNone:'close a sprint to compute', sdPerfect:'suspiciously perfect — sandbagging?', sdOk:'healthy commitment', sdBad:'commitments not holding',
+  m_goals:'Goals met', m_goalsSub:'independent of points burned',
+  ch_vel:'Velocity — delivered pts per sprint (dashed = committed)',
+  h_vel:'A widening gap between dashed (committed) and solid (delivered) = say/do eroding. Never compare this chart across teams — points are a local currency.',
+  ch_bd:'Sprint {0} burndown',
+  h_bd:'Above the dashed ideal = behind; flat segment = blocked or an unupdated board; a step <i>up</i> = scope injected. ',
+  h_bd_churn:'<b>+{0} pts were added after start — that\'s churn, raise it in standup.</b>', h_bd_clean:'No scope added since start — discipline holding.',
+  noBd:'No active sprint — start one to see the burndown.',
+  ch_rem:'pts remaining', ch_day:'day {0}', ch_items:'items (cumulative)', ch_today:'today', ch_doneLegend:'done ■', wkThis:'this wk',
+  h_report:'This generates an exec-ready markdown status: an on-track verdict computed from real board data, delivery trend, what shipped, and blockers. Paste into Slack/email or download. Rule of thumb for the audience: <b>verdict first, evidence second, asks last</b> — executives read the first three lines.',
+  btnGen:'Generate report', btnCopy:'Copy', btnDl:'Download .md', reportPh:'Press Generate — the report is built from the live project data.',
+  r_title:'Status report', r_date:'Date', r_mode:'Mode', r_modeS:'Sprint (Scrum)', r_modeK:'Kanban',
+  r_curSprint:'Current sprint', r_noSprint:'No active sprint.', r_goal:'Goal',
+  r_progress:'Progress: {0}/{1} pts done · remaining {2} vs ~{3} expected → {4}', r_onTrack:'ON TRACK', r_atRisk:'AT RISK',
+  r_churn:'Scope churn: +{0} pts added after sprint start', r_trend:'Delivery trend',
+  r_avgVel:'Avg velocity: {0} pts over {1} sprints', r_sayDo:'Last sprint say/do: {0}% ({1}/{2} pts) · goal {3}', r_met:'met', r_missed:'missed',
+  r_flow:'Flow health', r_tp:'Throughput: {0} items this week (6-wk avg {1}/wk)', r_ct:'Cycle time: P85 {0} · median {1}',
+  r_wip:'WIP: {0} in flight (limits {1}+{2})', r_aging:'Aging beyond P85: {0}',
+  r_shipped:'Shipped in the last 7 days ({0})', r_nothing:'- nothing closed this week',
+  r_risks:'Risks & blockers ({0})', r_none:'- none flagged', r_blocked:'blocked', na:'n/a',
+  s_settings:'Project settings', s_name:'Name', s_len:'Sprint length (days)', h_slen:'Applies to sprints started after the change.',
+  s_wipD:'WIP limit — in progress', s_wipR:'WIP limit — in review',
+  h_wiplimits:'Breaching a limit turns the column red on the board. Tighten limits gradually — the goal is a conversation, not a police state.',
+  s_data:'Data', s_export:'Export all (JSON)', s_import:'Import JSON',
+  h_data:"Everything lives in this browser's localStorage — clearing site data erases it. Export weekly; import restores or moves between machines. This exact JSON is also what the future cloud sync will push to Supabase.",
+  s_cloud:'Cloud sync — planned',
+  s_cloudSub:'Next phase: sign-in + sync to Supabase (Postgres with row-level security), so projects follow you across devices and support sharing. The storage layer here is already isolated behind load/save, so the swap is additive. See SUPABASE_PLAN.md shipped alongside this file.',
+  s_danger:'Danger zone', s_delete:'Delete this project',
+  mCreated:'created {0}', mDesc:'Description', mStatus:'Status', mSprint:'Sprint', mBlocked:'Blocked / impediment',
+  h_blocked:"Flag blockers instead of silently waiting — they surface in metrics and in the report's risk section. ", h_flight:'This item has been in flight <b>{0} days</b>.',
+  mDelete:'Delete', mCancel:'Cancel', mSave:'Save',
+  c_close:'Closing sprint {0}.\n\nWas the sprint goal met? (OK = yes, Cancel = no)',
+  c_kanban:'Switching to Kanban: the active sprint stays recorded, but the board becomes continuous flow with WIP limits. Continue?',
+  c_delTask:'Delete this task?', c_delProj:'Delete project "{0}" and all its data?',
+  t_created:'Project created', t_added:'Added to backlog', t_pulled:'Pulled to board', t_copied:'Copied', t_imported:'Imported',
+  t_importFail:'Import failed: not a valid backup', t_demo:'Demo projects loaded', t_mode:'Mode: {0}',
+  t_closeFirst:'Close the active sprint first', t_assignFirst:'Assign at least one task first',
+  modeS:'sprint', modeK:'kanban', d:'d', pts:'{0} pts', ptsShort:'{0} pts',
+},
+vi: {
+  coach:'gợi ý hướng dẫn', foot:'helm · portal một file · dữ liệu nằm trong trình duyệt này (localStorage) — nhớ xuất file dự phòng · đồng bộ cloud qua Supabase: xem kế hoạch', title:'Helm — cổng quản lý dự án',
+  ws:'Không gian làm việc', yourProjects:'Dự án của bạn', homeSub:'Toàn bộ dữ liệu lưu trong trình duyệt này. Dùng chức năng xuất trong Cài đặt để sao lưu.',
+  h_home:'Bước 1 của mọi thứ: dự án là một chiếc hộp có <b>chế độ vận hành</b>. Chọn <b>Sprint</b> khi các bên cần cam kết thời hạn và nhịp demo đều đặn; chọn <b>Kanban</b> khi ưu tiên đổi liên tục và công việc cần chảy đều. Đổi chế độ sau vẫn được — lịch sử giữ nguyên.',
+  createProject:'Tạo dự án', pname:'Tên dự án', pnamePh:'VD: Cải tổ onboarding',
+  h_name:'Đặt tên theo kết quả, đừng theo tên team — "Cải tổ onboarding" bền hơn "Backlog team A". Mã ticket 3–4 chữ cái được tạo tự động.',
+  dmode:'Chế độ vận hành',
+  h_mode:'<b>Sprint:</b> timebox cố định, phạm vi cam kết, dự báo bằng velocity — sự chắc chắn cho stakeholder. <b>Kanban:</b> kéo việc liên tục, giới hạn WIP, kỳ vọng cycle time — linh hoạt cho công việc biến động nhanh.',
+  slen:'Độ dài sprint (ngày)', h_len:'Hai tuần là mặc định có lý do: đủ ngắn để thích nghi, đủ dài để hoàn thành story thực sự.',
+  wipDoing:'Giới hạn WIP — đang làm', h_wip:'Bắt đầu ở mức ~ số người + 1, siết dần theo dữ liệu. Định luật Little: càng ít việc song song, việc xong càng nhanh.',
+  btnCreate:'Tạo dự án', demoTitle:'Khám phá bằng dữ liệu mẫu',
+  demoSub:'Nạp hai dự án với ba tuần lịch sử thực tế — mỗi chế độ một dự án — để mọi biểu đồ và báo cáo đều có nội dung.',
+  btnDemo:'Nạp dự án mẫu',
+  h_demo:'Nước đi đầu nên thử: mở demo, vọc thoải mái, rồi xoá trong Cài đặt. Chỉ số cần lịch sử mới có ý nghĩa — dự án trống thì biểu đồ trống, đúng nhưng không ấn tượng.',
+  noProjects:'Chưa có dự án — tạo mới bên dưới, hoặc nạp dữ liệu mẫu để khám phá.',
+  meta:'{0} việc · {1} xong',
+  tb_board:'Bảng', tb_backlogS:'Backlog & sprint', tb_backlogK:'Backlog', tb_metrics:'Chỉ số', tb_reports:'Báo cáo', tb_settings:'Cài đặt',
+  h_modeSwitch:'Đổi chế độ là đổi "hệ điều hành", không đổi dữ liệu: <b>Sprint</b> chỉ hiện sprint đang chạy trên bảng, mở khoá velocity, burndown và say/do. <b>Kanban</b> hiện dòng chảy liên tục với giới hạn WIP, mở khoá cycle time, throughput và CFD. Chạy sprint <i>kèm</i> giới hạn WIP chính là Scrumban — một hybrid hợp lệ.',
+  st_backlog:'Backlog', st_todo:'Cần làm', st_doing:'Đang làm', st_review:'Đang review', st_done:'Hoàn thành',
+  noSprint:'Chưa có sprint đang chạy.', goBacklog:'Đến Backlog & sprint',
+  h_board_empty:'Ở chế độ Sprint, bảng chỉ hiện việc đã cam kết. Quy trình: tinh chỉnh backlog → gán việc vào sprint dự kiến → bấm <b>Bắt đầu sprint</b>. Sau đó bảng này là mặt bàn standup mỗi ngày.',
+  h_board_kanban:'Kéo thả thẻ (hoặc dùng ‹ ›). <b>Cột đỏ</b> nghĩa là vượt giới hạn WIP — không phải lỗi, mà là chủ đề của standup: làm xong một việc trước khi bắt đầu việc mới. Thẻ tự đếm tuổi; cycle time bắt đầu khi thẻ vào Đang làm.',
+  h_board_scrum:'Đây là phạm vi đã cam kết — hãy bảo vệ nó. Việc gấp phải đi qua backlog và bị tính là <b>scope churn</b> (nhãn vàng "phát sinh"). Chỉ kéo sang Hoàn thành khi đạt định nghĩa hoàn thành; burndown và say/do được tính từ chính các bước kéo này.',
+  sprintBar:'Sprint {0} · ngày {1}/{2}', ptsDone:'{0}/{1} điểm xong', plusAdded:'+{0} phát sinh', goal:'Mục tiêu',
+  newCard:'+ thẻ mới', add:'thêm',
+  h_backlog_kanban:'Đây là hàng đợi bổ sung. Giữ nó <b>xếp theo giá trị</b> — thẻ trên cùng đơn giản là việc kế tiếp được kéo khi bảng trống chỗ. Đổi ưu tiên trong Kanban = xếp lại hàng đợi; bảng không bị xáo trộn.',
+  h_scrum_flow:'Quy trình Scrum, trái sang phải: <b>1)</b> thêm việc vào backlog, <b>2)</b> tạo sprint và gán việc bằng dropdown, <b>3)</b> viết mục tiêu rồi bấm Bắt đầu, <b>4)</b> làm việc trên Bảng, <b>5)</b> Đóng sprint — chỉ số tự điền.',
+  backlogN:'Backlog ({0})', newSprint:'+ Sprint mới', newTask:'Việc mới', tTitle:'Tiêu đề', tTitlePh:'Động từ + kết quả, VD: "Giới hạn số lần gửi lại OTP"',
+  tType:'Loại', ty_story:'Story', ty_bug:'Bug', ty_chore:'Việc vặt', tPoints:'Điểm', addBacklog:'Thêm vào backlog',
+  h_points_scrum:'Cắt nhỏ: việc trên 8 điểm hiếm khi xong trong một sprint — hãy tách. Điểm nuôi velocity, nên ước lượng tương đối so với việc cũ, đừng quy ra giờ.',
+  h_points_kanban:'Trong Kanban, đếm <b>số việc</b> tốt hơn đếm điểm — giữ việc cùng cỡ thay vì ước lượng chi li. Điểm chỉ là tuỳ chọn.',
+  emptyBacklog:'Backlog đang trống.', emptyBacklogR:'Backlog trống — thêm việc ở cột bên phải.',
+  optBacklog:'— backlog —', optPlanned:'Sprint {0} (dự kiến)', optActive:'Sprint {0} (đang chạy!)', pullBoard:'kéo lên bảng →',
+  spActive:'Sprint {0} · ĐANG CHẠY', spPlanned:'Sprint {0} · dự kiến', spClosed:'Sprint {0} · đã đóng',
+  btnStart:'Bắt đầu sprint', btnClose:'Đóng sprint', goalLb:'Mục tiêu sprint', goalPh:'Một câu mà buổi review sẽ demo theo',
+  spMeta:'{0} việc · {1} điểm đã gán', velRecent:' · velocity gần đây ≈ {0} điểm',
+  h_sprint_close:'Đóng sprint sẽ tính điểm bàn giao và tỉ lệ say/do, hỏi mục tiêu đạt chưa, và trả việc dở về backlog — đúng cách để velocity trung thực.',
+  h_commitVel:'Cam kết khoảng <b>{0} điểm</b> (velocity của bạn), đừng cam kết theo cảm tính. Mục tiêu viết ra biến sprint từ rổ ticket thành một lời hứa.',
+  h_commitNew:'Chưa có lịch sử velocity — hãy cam kết khiêm tốn và để dữ liệu hiệu chỉnh bạn. Mục tiêu viết ra biến sprint từ rổ ticket thành một lời hứa.',
+  spDayMeta:'{0}/{1} điểm · ngày {2}/{3}', spChurn:' · +{0} điểm phát sinh sau khi bắt đầu',
+  closedLine:'cam kết {0} → bàn giao {1} điểm (say/do {2}%) · mục tiêu {3}', met:'đạt ✓', missed:'trượt ✗', churnSuffix:' · +{0} phát sinh',
+  h_metrics_kanban:'Đọc sức khoẻ dòng chảy theo thứ tự: <b>WIP</b> (có quá tải không?), <b>tuổi việc</b> (hôm nay cần can thiệp gì?), <b>cycle time P85</b> (hứa được gì?), <b>throughput</b> (nhiên liệu cho dự báo). CFD cho thấy tất cả cùng lúc — độ dày dải là WIP, dải phình ra là nút thắt.',
+  m_wip:'WIP hiện tại', m_wipSub:'giới hạn: {0} đang làm + {1} review', m_ct:'Cycle time P85', m_ctSub:'trung vị {0} · báo P85, đừng báo trung bình',
+  m_tp:'Throughput', m_tpSub:'TB 6 tuần gần nhất · {0} đang bị chặn', perWk:'/tuần',
+  ch_tp:'Throughput — số việc xong mỗi tuần',
+  h_tp:'Chuỗi số này là nhiên liệu dự báo: "20 việc này bao giờ xong?" = mô phỏng theo các con số tuần này và báo mốc tuần ở độ tin cậy 85%.',
+  ch_cfd:'Dòng chảy tích luỹ (CFD) — 28 ngày qua',
+  h_cfd:'Dải dưới cùng (xanh lục) = hoàn thành, rồi review (vàng), đang làm (tím), hàng đợi (xám). Khoẻ = các dải đi lên song song. Dải tím/vàng phình = nút thắt hình thành. Mép xanh nằm ngang = không có gì được giao.',
+  ch_age:'Tuổi công việc — đang chạy',
+  h_age:'Chỉ báo sớm: việc nào già hơn P85 ({0}) sẽ bị gắn cờ. Can thiệp <i>trước khi</i> nó thành dữ liệu cycle time xấu — dồn lực, tách nhỏ, hoặc bỏ.',
+  nothingFlight:'Không có việc đang chạy.', blockedTag:'[bị chặn]', addedTag:'phát sinh',
+  h_metrics_scrum:'Bài kiểm tra sức khoẻ Scrum: <b>velocity</b> (dự báo có ổn định?), <b>say/do</b> (lời hứa có đáng tin? khoẻ ≈ 80–90%), <b>burndown</b> (sprint này có đúng nhịp?), <b>churn</b> (kỷ luật phạm vi có giữ?). Velocity là đầu vào lập kế hoạch — biến nó thành chỉ tiêu là nó bị "diễn" ngay.',
+  m_vel:'Velocity TB', m_velSub:'{0} sprint đã đóng', m_velStab:' · cần 3–4 sprint để ổn định',
+  m_sd:'Say/do (sprint trước)', sdNone:'đóng một sprint để tính', sdPerfect:'hoàn hảo đáng ngờ — cam kết quá an toàn?', sdOk:'cam kết lành mạnh', sdBad:'cam kết không giữ được',
+  m_goals:'Mục tiêu đạt', m_goalsSub:'độc lập với số điểm đã đốt',
+  ch_vel:'Velocity — điểm bàn giao mỗi sprint (nét đứt = cam kết)',
+  h_vel:'Khoảng cách nét đứt (cam kết) và cột đặc (bàn giao) càng rộng = say/do càng xói mòn. Đừng bao giờ so biểu đồ này giữa các team — điểm là "tiền tệ nội bộ".',
+  ch_bd:'Burndown Sprint {0}',
+  h_bd:'Nằm trên đường lý tưởng nét đứt = đang chậm; đoạn nằm ngang = bị chặn hoặc bảng không được cập nhật; bậc <i>đi lên</i> = phạm vi bị nhồi thêm. ',
+  h_bd_churn:'<b>+{0} điểm được thêm sau khi bắt đầu — đó là churn, hãy nêu ở standup.</b>', h_bd_clean:'Chưa có phạm vi thêm sau khi bắt đầu — kỷ luật đang giữ tốt.',
+  noBd:'Chưa có sprint đang chạy — bắt đầu một sprint để xem burndown.',
+  ch_rem:'điểm còn lại', ch_day:'ngày {0}', ch_items:'số việc (cộng dồn)', ch_today:'hôm nay', ch_doneLegend:'xong ■', wkThis:'tuần này',
+  h_report:'Chức năng này tạo báo cáo markdown chuẩn gửi sếp: kết luận đúng tiến độ tính từ dữ liệu bảng thật, xu hướng bàn giao, việc đã giao, và vướng mắc. Dán vào Slack/email hoặc tải về. Nguyên tắc cho khán giả: <b>kết luận trước, bằng chứng sau, đề xuất cuối</b> — sếp chỉ đọc ba dòng đầu.',
+  btnGen:'Tạo báo cáo', btnCopy:'Sao chép', btnDl:'Tải .md', reportPh:'Bấm Tạo báo cáo — nội dung được dựng từ dữ liệu dự án đang chạy.',
+  r_title:'Báo cáo tình hình', r_date:'Ngày', r_mode:'Chế độ', r_modeS:'Sprint (Scrum)', r_modeK:'Kanban',
+  r_curSprint:'Sprint hiện tại', r_noSprint:'Chưa có sprint đang chạy.', r_goal:'Mục tiêu',
+  r_progress:'Tiến độ: {0}/{1} điểm xong · còn {2} so với ~{3} kỳ vọng → {4}', r_onTrack:'ĐÚNG TIẾN ĐỘ', r_atRisk:'CÓ RỦI RO',
+  r_churn:'Scope churn: +{0} điểm thêm sau khi bắt đầu sprint', r_trend:'Xu hướng bàn giao',
+  r_avgVel:'Velocity TB: {0} điểm qua {1} sprint', r_sayDo:'Say/do sprint gần nhất: {0}% ({1}/{2} điểm) · mục tiêu {3}', r_met:'đạt', r_missed:'trượt',
+  r_flow:'Sức khoẻ dòng chảy', r_tp:'Throughput: {0} việc tuần này (TB 6 tuần: {1}/tuần)', r_ct:'Cycle time: P85 {0} · trung vị {1}',
+  r_wip:'WIP: {0} đang chạy (giới hạn {1}+{2})', r_aging:'Quá tuổi P85: {0}',
+  r_shipped:'Đã bàn giao 7 ngày qua ({0})', r_nothing:'- chưa đóng việc nào tuần này',
+  r_risks:'Rủi ro & vướng mắc ({0})', r_none:'- không có cờ nào', r_blocked:'bị chặn', na:'—',
+  s_settings:'Cài đặt dự án', s_name:'Tên', s_len:'Độ dài sprint (ngày)', h_slen:'Áp dụng cho các sprint bắt đầu sau khi đổi.',
+  s_wipD:'Giới hạn WIP — đang làm', s_wipR:'Giới hạn WIP — đang review',
+  h_wiplimits:'Vượt giới hạn sẽ làm cột chuyển đỏ trên bảng. Siết giới hạn từ từ — mục tiêu là một cuộc trò chuyện, không phải trạng thái cảnh sát.',
+  s_data:'Dữ liệu', s_export:'Xuất toàn bộ (JSON)', s_import:'Nhập JSON',
+  h_data:'Mọi thứ nằm trong localStorage của trình duyệt này — xoá dữ liệu trang là mất. Xuất file hằng tuần; nhập lại để khôi phục hoặc chuyển máy. Đây cũng chính là JSON mà đồng bộ cloud sau này sẽ đẩy lên Supabase.',
+  s_cloud:'Đồng bộ cloud — theo kế hoạch',
+  s_cloudSub:'Giai đoạn kế tiếp: đăng nhập + đồng bộ lên Supabase (Postgres với row-level security), để dự án theo bạn qua nhiều thiết bị và hỗ trợ chia sẻ. Lớp lưu trữ đã được cô lập sau load/save nên việc thay chỉ là bổ sung. Xem SUPABASE_PLAN.md đi kèm.',
+  s_danger:'Vùng nguy hiểm', s_delete:'Xoá dự án này',
+  mCreated:'tạo {0}', mDesc:'Mô tả', mStatus:'Trạng thái', mSprint:'Sprint', mBlocked:'Bị chặn / vướng mắc',
+  h_blocked:'Gắn cờ vướng mắc thay vì im lặng chờ — nó sẽ hiện trong chỉ số và mục rủi ro của báo cáo. ', h_flight:'Việc này đã chạy <b>{0} ngày</b>.',
+  mDelete:'Xoá', mCancel:'Huỷ', mSave:'Lưu',
+  c_close:'Đóng sprint {0}.\n\nMục tiêu sprint có đạt không? (OK = đạt, Cancel = không)',
+  c_kanban:'Chuyển sang Kanban: sprint đang chạy vẫn được ghi nhận, nhưng bảng chuyển thành dòng chảy liên tục với giới hạn WIP. Tiếp tục?',
+  c_delTask:'Xoá việc này?', c_delProj:'Xoá dự án "{0}" cùng toàn bộ dữ liệu?',
+  t_created:'Đã tạo dự án', t_added:'Đã thêm vào backlog', t_pulled:'Đã kéo lên bảng', t_copied:'Đã sao chép', t_imported:'Đã nhập',
+  t_importFail:'Nhập thất bại: file dự phòng không hợp lệ', t_demo:'Đã nạp dự án mẫu', t_mode:'Chế độ: {0}',
+  t_closeFirst:'Hãy đóng sprint đang chạy trước', t_assignFirst:'Hãy gán ít nhất một việc trước',
+  modeS:'sprint', modeK:'kanban', d:'ng', pts:'{0} điểm', ptsShort:'{0}đ',
+}};
+const t = k => (I18N[S.lang] && I18N[S.lang][k]) ?? I18N.en[k] ?? k;
+const tf = (k, ...v) => t(k).replace(/\{(\d)\}/g, (_, i) => v[+i]);
+
 /* ================= state & persistence ================= */
 const LS = 'helm.v1';
 const DAY = 86400000;
-let S = load() || { projects: [], activeProjectId: null, tab: 'board', coach: true };
+let S = load() || { projects: [], activeProjectId: null, tab: 'board', coach: true, lang: 'en' };
+if (!S.lang) S.lang = 'en';
 function load(){ try{ return JSON.parse(localStorage.getItem(LS)); }catch(e){ return null; } }
 function save(){ try{ localStorage.setItem(LS, JSON.stringify(S)); }catch(e){} }
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const fmtD = ts => new Date(ts).toLocaleDateString(undefined, {month:'short', day:'numeric'});
+const fmtD = ts => new Date(ts).toLocaleDateString(S.lang === 'vi' ? 'vi-VN' : undefined, {month:'short', day:'numeric'});
 const daysAgo = ts => Math.max(0, Math.round((Date.now() - ts) / DAY));
 const endOfDay = ts => { const d = new Date(ts); d.setHours(23,59,59,999); return d.getTime(); };
 
 const STATUSES = ['backlog','todo','doing','review','done'];
-const LABEL = { backlog:'Backlog', todo:'To do', doing:'In progress', review:'In review', done:'Done' };
+const L = st => t('st_' + st);
 const proj = () => S.projects.find(p => p.id === S.activeProjectId);
 const activeSprint = p => p.sprints.find(s => s.state === 'active');
 const plannedSprints = p => p.sprints.filter(s => s.state === 'planned');
 const closedSprints = p => p.sprints.filter(s => s.state === 'closed');
 const taskById = (p, id) => p.tasks.find(t => t.id === id);
-function toast(msg){ const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._h); toast._h = setTimeout(() => t.classList.remove('show'), 2200); }
+function toast(msg){ const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toast._h); toast._h = setTimeout(() => el.classList.remove('show'), 2200); }
 
 /* ================= domain actions ================= */
 function createProject({name, mode, sprintLen, wipDoing, wipReview}){
@@ -205,29 +425,29 @@ function createProject({name, mode, sprintLen, wipDoing, wipReview}){
 }
 function createTask(p, {title, type='story', points=3, status='backlog', desc='', priority='medium', sprintId=null}){
   p.seq++;
-  const t = { id: uid(), key: p.key + '-' + p.seq, title, desc, type, priority, points: +points || 0,
+  const task = { id: uid(), key: p.key + '-' + p.seq, title, desc, type, priority, points: +points || 0,
     status, sprintId, blocked: false, addedAfterStart: false,
     createdAt: Date.now(), startedAt: null, doneAt: null,
     history: [{ ts: Date.now(), from: null, to: status }] };
   const as = activeSprint(p);
-  if (sprintId && as && sprintId === as.id) t.addedAfterStart = true;
-  p.tasks.push(t); return t;
+  if (sprintId && as && sprintId === as.id) task.addedAfterStart = true;
+  p.tasks.push(task); return task;
 }
-function setStatus(p, t, to){
-  if (t.status === to || !STATUSES.includes(to)) return;
-  const from = t.status; t.status = to;
-  t.history.push({ ts: Date.now(), from, to });
-  if (to === 'doing' && !t.startedAt) t.startedAt = Date.now();
-  if (to === 'done') t.doneAt = Date.now();
-  if (from === 'done' && to !== 'done') t.doneAt = null;
+function setStatus(p, task, to){
+  if (task.status === to || !STATUSES.includes(to)) return;
+  const from = task.status; task.status = to;
+  task.history.push({ ts: Date.now(), from, to });
+  if (to === 'doing' && !task.startedAt) task.startedAt = Date.now();
+  if (to === 'done') task.doneAt = Date.now();
+  if (from === 'done' && to !== 'done') task.doneAt = null;
 }
-function moveTask(p, t, dir){
+function moveTask(p, task, dir){
   const order = ['todo','doing','review','done'];
-  let i = order.indexOf(t.status);
-  if (i === -1) { setStatus(p, t, 'todo'); return; }
+  let i = order.indexOf(task.status);
+  if (i === -1) { setStatus(p, task, 'todo'); return; }
   const ni = i + dir;
   if (ni < 0 || ni >= order.length) return;
-  setStatus(p, t, order[ni]);
+  setStatus(p, task, order[ni]);
 }
 function createSprint(p){
   const n = p.sprints.length + 1;
@@ -235,54 +455,54 @@ function createSprint(p){
     startAt: null, endAt: null, committedIds: [], committedPoints: 0, summary: null });
 }
 function startSprint(p, sp){
-  if (activeSprint(p)) { toast('Close the active sprint first'); return; }
-  const members = p.tasks.filter(t => t.sprintId === sp.id);
-  if (!members.length) { toast('Assign at least one task first'); return; }
+  if (activeSprint(p)) { toast(t('t_closeFirst')); return; }
+  const members = p.tasks.filter(x => x.sprintId === sp.id);
+  if (!members.length) { toast(t('t_assignFirst')); return; }
   sp.state = 'active'; sp.startAt = Date.now();
   sp.endAt = Date.now() + p.settings.sprintLen * DAY;
-  sp.committedIds = members.map(t => t.id);
-  sp.committedPoints = members.reduce((a,t) => a + t.points, 0);
-  members.forEach(t => { if (t.status === 'backlog') setStatus(p, t, 'todo'); });
+  sp.committedIds = members.map(x => x.id);
+  sp.committedPoints = members.reduce((a,x) => a + x.points, 0);
+  members.forEach(x => { if (x.status === 'backlog') setStatus(p, x, 'todo'); });
 }
 function closeSprint(p, sp){
-  const members = p.tasks.filter(t => t.sprintId === sp.id);
-  const delivered = members.filter(t => t.status === 'done').reduce((a,t) => a + t.points, 0);
-  const added = members.filter(t => t.addedAfterStart).reduce((a,t) => a + t.points, 0);
-  const goalMet = confirm('Closing sprint ' + sp.number + '.\n\nWas the sprint goal met? (OK = yes, Cancel = no)');
+  const members = p.tasks.filter(x => x.sprintId === sp.id);
+  const delivered = members.filter(x => x.status === 'done').reduce((a,x) => a + x.points, 0);
+  const added = members.filter(x => x.addedAfterStart).reduce((a,x) => a + x.points, 0);
+  const goalMet = confirm(tf('c_close', sp.number));
   sp.summary = { committedPoints: sp.committedPoints, deliveredPoints: delivered, addedPoints: added, goalMet, closedAt: Date.now() };
   sp.state = 'closed';
-  members.forEach(t => {
-    if (t.status !== 'done') { setStatus(p, t, 'backlog'); t.sprintId = null; t.addedAfterStart = false; }
+  members.forEach(x => {
+    if (x.status !== 'done') { setStatus(p, x, 'backlog'); x.sprintId = null; x.addedAfterStart = false; }
   });
 }
 
 /* ================= metrics ================= */
 const pct = (arr, q) => { if(!arr.length) return null; const a=[...arr].sort((x,y)=>x-y); return a[Math.min(a.length-1, Math.ceil(q*a.length)-1)]; };
-function cycleDays(t){ return (t.doneAt && t.startedAt) ? Math.max(0.2,(t.doneAt - t.startedAt)/DAY) : null; }
+function cycleDays(x){ return (x.doneAt && x.startedAt) ? Math.max(0.2,(x.doneAt - x.startedAt)/DAY) : null; }
 function kanbanMetrics(p){
-  const done = p.tasks.filter(t => t.status === 'done');
+  const done = p.tasks.filter(x => x.status === 'done');
   const cycles = done.map(cycleDays).filter(v => v !== null);
-  const wip = p.tasks.filter(t => t.status === 'doing' || t.status === 'review');
-  const weeks = [];                                    // throughput, last 6 weeks
+  const wip = p.tasks.filter(x => x.status === 'doing' || x.status === 'review');
+  const weeks = [];
   for (let w = 5; w >= 0; w--){
     const end = endOfDay(Date.now() - w*7*DAY), start = end - 7*DAY;
-    weeks.push({ label: w === 0 ? 'this wk' : '-' + w + 'w', v: done.filter(t => t.doneAt > start && t.doneAt <= end).length });
+    weeks.push({ label: w === 0 ? t('wkThis') : '-' + w + 'w', v: done.filter(x => x.doneAt > start && x.doneAt <= end).length });
   }
-  const aging = p.tasks.filter(t => t.startedAt && !t.doneAt && t.status !== 'backlog')
-    .map(t => ({ t, age: (Date.now() - t.startedAt)/DAY })).sort((a,b) => b.age - a.age);
+  const aging = p.tasks.filter(x => x.startedAt && !x.doneAt && x.status !== 'backlog')
+    .map(x => ({ t: x, age: (Date.now() - x.startedAt)/DAY })).sort((a,b) => b.age - a.age);
   return { cycles, p85: pct(cycles,.85), p50: pct(cycles,.5), weeks,
     tpAvg: weeks.reduce((a,w)=>a+w.v,0)/6, wipNow: wip.length,
-    aging, blocked: p.tasks.filter(t => t.blocked && t.status !== 'done') };
+    aging, blocked: p.tasks.filter(x => x.blocked && x.status !== 'done') };
 }
 function cfdSeries(p, days=28){
   const out = [];
   for (let d = days-1; d >= 0; d--){
     const ts = endOfDay(Date.now() - d*DAY);
     const c = { queued:0, doing:0, review:0, done:0 };
-    p.tasks.forEach(t => {
-      if (t.createdAt > ts) return;
+    p.tasks.forEach(x => {
+      if (x.createdAt > ts) return;
       let st = 'backlog';
-      for (const h of t.history){ if (h.ts <= ts) st = h.to; else break; }
+      for (const h of x.history){ if (h.ts <= ts) st = h.to; else break; }
       if (st === 'backlog' || st === 'todo') c.queued++;
       else c[st]++;
     });
@@ -291,21 +511,21 @@ function cfdSeries(p, days=28){
   return out;
 }
 function burndown(p, sp){
-  const members = p.tasks.filter(t => t.sprintId === sp.id);
-  const total = members.reduce((a,t) => a + t.points, 0);
+  const members = p.tasks.filter(x => x.sprintId === sp.id);
+  const total = members.reduce((a,x) => a + x.points, 0);
   const nDays = Math.max(1, Math.round((sp.endAt - sp.startAt)/DAY));
   const ideal = [], actual = [];
   for (let d = 0; d <= nDays; d++){
     const ts = endOfDay(sp.startAt + d*DAY);
     ideal.push(total * (1 - d/nDays));
     if (ts <= endOfDay(Date.now()) || d === 0){
-      const donePts = members.filter(t => t.doneAt && t.doneAt <= ts).reduce((a,t) => a + t.points, 0);
+      const donePts = members.filter(x => x.doneAt && x.doneAt <= ts).reduce((a,x) => a + x.points, 0);
       actual.push(total - donePts);
     }
   }
   return { total, nDays, ideal, actual,
     scopeAdded: Math.max(0, total - sp.committedPoints),
-    donePts: members.filter(t => t.status==='done').reduce((a,t)=>a+t.points,0),
+    donePts: members.filter(x => x.status==='done').reduce((a,x)=>a+x.points,0),
     dayNow: Math.min(nDays, Math.max(0, Math.round((Date.now()-sp.startAt)/DAY))) };
 }
 function velocitySeries(p){
@@ -338,7 +558,7 @@ function svgBurndown(bd, w=560, h=210){
   const y = v => (h-36) - (v/max)*(h-66);
   let s = `<svg viewBox="0 0 ${w} ${h}" width="100%">`;
   s += `<line x1="46" y1="14" x2="46" y2="${h-36}" class="axis"/><line x1="46" y1="${h-36}" x2="${w-14}" y2="${h-36}" class="axis"/>`;
-  s += `<text x="46" y="10">pts remaining</text><text x="${w-14}" y="${h-18}" text-anchor="end">day ${bd.nDays}</text>`;
+  s += `<text x="46" y="10">${t('ch_rem')}</text><text x="${w-14}" y="${h-18}" text-anchor="end">${tf('ch_day', bd.nDays)}</text>`;
   s += `<polyline fill="none" stroke="#AEB6AC" stroke-width="1.2" stroke-dasharray="5 5" points="${bd.ideal.map((v,d)=>x(d)+','+y(v)).join(' ')}"/>`;
   s += `<polyline fill="none" stroke="var(--sprint)" stroke-width="2.2" stroke-linejoin="round" points="${bd.actual.map((v,d)=>x(d)+','+y(v)).join(' ')}"/>`;
   bd.actual.forEach((v,d)=>{ s += `<circle cx="${x(d)}" cy="${y(v)}" r="3" fill="var(--sprint)"/>`; });
@@ -356,23 +576,29 @@ function svgCFD(series, w=560, h=220){
     { k:'queued', fill:'#B4B2A9', op:.35 },
   ];
   let cum = series.map(() => 0), s = `<svg viewBox="0 0 ${w} ${h}" width="100%">`;
-  layers.forEach(L => {
+  layers.forEach(Lr => {
     const lower = [...cum];
-    cum = cum.map((v,i) => v + series[i][L.k]);
+    cum = cum.map((v,i) => v + series[i][Lr.k]);
     const top = cum.map((v,i) => x(i)+','+y(v)).join(' ');
     const bot = lower.map((v,i) => x(i)+','+y(v)).reverse().join(' ');
-    s += `<polygon points="${top} ${bot}" fill="${L.fill}" opacity="${L.op}"/>`;
+    s += `<polygon points="${top} ${bot}" fill="${Lr.fill}" opacity="${Lr.op}"/>`;
   });
   s += `<line x1="46" y1="14" x2="46" y2="${h-34}" class="axis"/><line x1="46" y1="${h-34}" x2="${w-14}" y2="${h-34}" class="axis"/>`;
-  s += `<text x="46" y="10">items (cumulative)</text><text x="${w-14}" y="${h-16}" text-anchor="end">today</text><text x="46" y="${h-16}">-${n-1}d</text>`;
-  s += `<text x="${w-14}" y="${h-46}" text-anchor="end" fill="#0A5145">done ■</text>`;
+  s += `<text x="46" y="10">${t('ch_items')}</text><text x="${w-14}" y="${h-16}" text-anchor="end">${t('ch_today')}</text><text x="46" y="${h-16}">-${n-1}${t('d')}</text>`;
+  s += `<text x="${w-14}" y="${h-46}" text-anchor="end" fill="#0A5145">${t('ch_doneLegend')}</text>`;
   return s + '</svg>';
 }
+
 /* ================= views ================= */
 const app = document.getElementById('app');
 function render(){
   document.body.classList.toggle('coach-off', !S.coach);
   document.getElementById('coachSwitch').setAttribute('aria-checked', String(S.coach));
+  document.getElementById('coachLabel').textContent = t('coach');
+  document.getElementById('footTxt').textContent = t('foot');
+  document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === S.lang)));
+  document.documentElement.lang = S.lang;
+  document.title = t('title');
   const p = proj();
   document.body.dataset.mode = p ? p.mode : '';
   app.innerHTML = p ? viewProject(p) : viewHome();
@@ -384,52 +610,52 @@ function render(){
 function viewHome(){
   const cards = S.projects.map(p => `
     <button class="pcard" data-action="open-project" data-id="${p.id}">
-      <span class="nm">${esc(p.name)}</span>
-      <span class="meta">${p.key} · ${p.mode === 'scrum' ? 'sprint mode' : 'kanban mode'} · ${p.tasks.length} tasks · ${p.tasks.filter(t=>t.status==='done').length} done</span>
+      <span class="nm">${esc(p.name)}<span class="modep ${p.mode}">${p.mode === 'scrum' ? t('modeS') : t('modeK')}</span></span>
+      <span class="meta">${p.key} · ${tf('meta', p.tasks.length, p.tasks.filter(x=>x.status==='done').length)}</span>
     </button>`).join('');
   return `
-  <p class="eyebrow">Workspace</p>
-  <h2 style="margin:6px 0 4px">Your projects</h2>
-  <p class="mut small" style="max-width:64ch">Everything is stored in this browser. Use export in project settings for backups.</p>
-  <div class="hint">Step 1 of everything: a project is a container with a <b>delivery mode</b>. Pick <b>Sprint</b> when stakeholders need date commitments and a demo cadence; pick <b>Kanban</b> when priorities churn and work should flow continuously. You can switch later — history is kept.</div>
+  <p class="eyebrow">${t('ws')}</p>
+  <h2 style="margin:6px 0 4px">${t('yourProjects')}</h2>
+  <p class="mut small" style="max-width:64ch">${t('homeSub')}</p>
+  <div class="hint">${t('h_home')}</div>
   <div class="spacer"></div>
-  <div class="grid2">${cards || '<div class="empty">No projects yet — create one below, or load the demo data to explore with realistic history.</div>'}</div>
+  <div class="grid2">${cards || `<div class="empty">${t('noProjects')}</div>`}</div>
   <div class="spacer"></div>
   <div class="grid2">
     <div class="card">
-      <h3>Create a project</h3>
+      <h3>${t('createProject')}</h3>
       <div class="spacer" style="height:10px"></div>
       <form data-form="create-project">
-        <label class="f"><span class="lb">Project name</span><input type="text" name="name" required placeholder="e.g. Onboarding revamp">
-          <div class="hint">Name the outcome, not the team — "Onboarding revamp" ages better than "Team A backlog". A 3–4 letter key for ticket IDs is derived automatically.</div></label>
-        <label class="f"><span class="lb">Delivery mode</span>
+        <label class="f"><span class="lb">${t('pname')}</span><input type="text" name="name" required placeholder="${esc(t('pnamePh'))}">
+          <div class="hint">${t('h_name')}</div></label>
+        <label class="f"><span class="lb">${t('dmode')}</span>
           <div class="seg" role="group">
             <button type="button" data-m="scrum" data-action="pick-mode" aria-pressed="true">Sprint</button>
             <button type="button" data-m="kanban" data-action="pick-mode" aria-pressed="false">Kanban</button>
           </div>
           <input type="hidden" name="mode" value="scrum">
-          <div class="hint"><b>Sprint:</b> fixed timebox, committed scope, velocity forecasting — predictability for stakeholders. <b>Kanban:</b> continuous pull, WIP limits, cycle-time expectations — flexibility for fast-churning work.</div></label>
+          <div class="hint">${t('h_mode')}</div></label>
         <div class="row">
-          <label class="f" style="flex:1"><span class="lb">Sprint length (days)</span><input type="number" name="sprintLen" value="14" min="7" max="28">
-            <div class="hint">Two weeks is the default for a reason: short enough to adapt, long enough to finish real stories.</div></label>
-          <label class="f" style="flex:1"><span class="lb">WIP limit — in progress</span><input type="number" name="wipDoing" value="4" min="1">
-            <div class="hint">Start near team size + 1, tighten from data. Little's Law: less parallel work = faster finishing.</div></label>
+          <label class="f" style="flex:1"><span class="lb">${t('slen')}</span><input type="number" name="sprintLen" value="14" min="7" max="28">
+            <div class="hint">${t('h_len')}</div></label>
+          <label class="f" style="flex:1"><span class="lb">${t('wipDoing')}</span><input type="number" name="wipDoing" value="4" min="1">
+            <div class="hint">${t('h_wip')}</div></label>
         </div>
-        <button class="btn accent" type="submit">Create project</button>
+        <button class="btn accent" type="submit">${t('btnCreate')}</button>
       </form>
     </div>
     <div class="card">
-      <h3>Explore with demo data</h3>
-      <p class="mut small" style="margin:8px 0 12px">Loads two projects with three weeks of realistic history — one in each mode — so every chart and report has something to show.</p>
-      <button class="btn ghost" data-action="seed-demo">Load demo projects</button>
-      <div class="hint">Good first move: open the demo, break things, then delete it in Settings. Metrics need history to be meaningful — an empty project shows empty charts, which is correct but unimpressive.</div>
+      <h3>${t('demoTitle')}</h3>
+      <p class="mut small" style="margin:8px 0 12px">${t('demoSub')}</p>
+      <button class="btn ghost" data-action="seed-demo">${t('btnDemo')}</button>
+      <div class="hint">${t('h_demo')}</div>
     </div>
   </div>`;
 }
 
 /* ---------- project shell ---------- */
 function viewProject(p){
-  const tabs = [['board','Board'], ['backlog', p.mode==='scrum' ? 'Backlog & sprints' : 'Backlog'], ['metrics','Metrics'], ['reports','Reports'], ['settings','Settings']];
+  const tabs = [['board',t('tb_board')], ['backlog', p.mode==='scrum' ? t('tb_backlogS') : t('tb_backlogK')], ['metrics',t('tb_metrics')], ['reports',t('tb_reports')], ['settings',t('tb_settings')]];
   return `
   <div class="phead">
     <h2>${esc(p.name)}</h2>
@@ -439,27 +665,27 @@ function viewProject(p){
       <button data-m="kanban" data-action="set-mode" aria-pressed="${p.mode==='kanban'}">Kanban</button>
     </div>
   </div>
-  <div class="hint">Mode changes the operating system, not the data: <b>Sprint</b> shows only the active sprint on the board and unlocks velocity, burndown and say/do. <b>Kanban</b> shows continuous flow with WIP limits and unlocks cycle time, throughput and the CFD. Running sprints <i>with</i> WIP limits is Scrumban — a legitimate hybrid.</div>
+  <div class="hint">${t('h_modeSwitch')}</div>
   <div class="spacer" style="height:12px"></div>
   <div class="tabs" role="tablist">${tabs.map(([k,l]) => `<button role="tab" data-action="tab" data-id="${k}" aria-selected="${S.tab===k}">${l}</button>`).join('')}</div>
   ${ {board:viewBoard, backlog:viewBacklog, metrics:viewMetrics, reports:viewReports, settings:viewSettings}[S.tab](p) }`;
 }
 
 /* ---------- board ---------- */
-function taskCard(p, t){
-  const age = t.startedAt && !t.doneAt ? daysAgo(t.startedAt) + 'd' : '';
+function taskCard(p, x){
+  const age = x.startedAt && !x.doneAt ? daysAgo(x.startedAt) + t('d') : '';
   return `
-  <div class="task" draggable="true" data-task="${t.id}" data-action="open-task" data-id="${t.id}">
-    <div class="tt">${esc(t.title)}</div>
+  <div class="task" draggable="true" data-task="${x.id}" data-action="open-task" data-id="${x.id}">
+    <div class="tt">${esc(x.title)}</div>
     <div class="tm">
-      <span class="dot ${t.type}"></span><span>${t.key}</span>
-      ${p.mode==='scrum' && t.points ? `<span class="pts">${t.points} pts</span>` : ''}
+      <span class="dot ${x.type}"></span><span>${x.key}</span>
+      ${p.mode==='scrum' && x.points ? `<span class="pts">${tf('ptsShort', x.points)}</span>` : ''}
       ${age ? `<span>${age}</span>` : ''}
-      ${t.blocked ? '<span class="blocked">blocked</span>' : ''}
-      ${t.addedAfterStart ? '<span class="added">added</span>' : ''}
+      ${x.blocked ? `<span class="blocked">${t('r_blocked')}</span>` : ''}
+      ${x.addedAfterStart ? `<span class="added">${t('addedTag')}</span>` : ''}
       <span class="mv">
-        <button data-action="move-left" data-id="${t.id}" aria-label="Move left">‹</button>
-        <button data-action="move-right" data-id="${t.id}" aria-label="Move right">›</button>
+        <button data-action="move-left" data-id="${x.id}" aria-label="Move left">‹</button>
+        <button data-action="move-right" data-id="${x.id}" aria-label="Move right">›</button>
       </span>
     </div>
   </div>`;
@@ -468,216 +694,214 @@ function viewBoard(p){
   const as = activeSprint(p);
   let pool;
   if (p.mode === 'scrum'){
-    if (!as) return `<div class="empty">No active sprint.<br><br>
-      <button class="btn accent" data-action="tab" data-id="backlog">Go to Backlog & sprints</button>
-      <div class="hint" style="text-align:left">In Sprint mode the board shows only committed work. The flow: refine the backlog → assign tasks to a planned sprint → press <b>Start sprint</b>. Then this board becomes your daily standup surface.</div></div>`;
-    pool = p.tasks.filter(t => t.sprintId === as.id);
+    if (!as) return `<div class="empty">${t('noSprint')}<br><br>
+      <button class="btn accent" data-action="tab" data-id="backlog">${t('goBacklog')}</button>
+      <div class="hint" style="text-align:left">${t('h_board_empty')}</div></div>`;
+    pool = p.tasks.filter(x => x.sprintId === as.id);
   } else {
-    pool = p.tasks.filter(t => t.status !== 'backlog');
+    pool = p.tasks.filter(x => x.status !== 'backlog');
   }
   const cols = ['todo','doing','review','done'].map(st => {
-    const items = pool.filter(t => t.status === st);
+    const items = pool.filter(x => x.status === st);
     const lim = st === 'doing' ? p.settings.wipDoing : st === 'review' ? p.settings.wipReview : null;
     const kanbanLimit = p.mode === 'kanban' && lim;
     const breach = kanbanLimit && items.length > lim;
     return `
     <div class="col ${breach?'breach':''}" data-drop="${st}">
-      <h4><span>${LABEL[st]}</span><span class="cnt">${items.length}${kanbanLimit ? ' / ' + lim : ''}</span></h4>
-      ${items.map(t => taskCard(p,t)).join('')}
+      <h4><span>${L(st)}</span><span class="cnt">${items.length}${kanbanLimit ? ' / ' + lim : ''}</span></h4>
+      ${items.map(x => taskCard(p,x)).join('')}
       ${st === 'todo' && p.mode === 'kanban' ? `
-        <form class="addform" data-form="quick-task"><input type="text" name="title" placeholder="+ new card" aria-label="New card title"><button class="btn sm accent" type="submit">add</button></form>` : ''}
+        <form class="addform" data-form="quick-task"><input type="text" name="title" placeholder="${esc(t('newCard'))}" aria-label="New card title"><button class="btn sm accent" type="submit">${t('add')}</button></form>` : ''}
     </div>`;
   }).join('');
   const sprintBar = as ? (() => { const bd = burndown(p, as); return `
     <div class="sprint-card active" style="margin-bottom:14px">
       <div class="row" style="justify-content:space-between">
-        <h4>Sprint ${as.number} · day ${bd.dayNow} of ${bd.nDays}</h4>
-        <span class="mono small">${bd.donePts}/${bd.total} pts done${bd.scopeAdded ? ' · +' + bd.scopeAdded + ' added' : ''}</span>
+        <h4>${tf('sprintBar', as.number, bd.dayNow, bd.nDays)}</h4>
+        <span class="mono small">${tf('ptsDone', bd.donePts, bd.total)}${bd.scopeAdded ? ' · ' + tf('plusAdded', bd.scopeAdded) : ''}</span>
       </div>
-      ${as.goal ? `<p class="g">Goal: ${esc(as.goal)}</p>` : ''}
+      ${as.goal ? `<p class="g">${t('goal')}: ${esc(as.goal)}</p>` : ''}
       <div class="progress"><i style="width:${bd.total? Math.round(100*bd.donePts/bd.total):0}%"></i></div>
     </div>`; })() : '';
   return `
   ${sprintBar}
-  <div class="hint">${p.mode === 'kanban'
-    ? 'Drag cards (or use ‹ ›) to move work. A <b>red column</b> means the WIP limit is breached — that\'s not an error, it\'s the daily conversation: finish something before starting something. Cards track their age automatically; cycle time starts when a card enters In progress.'
-    : 'This is the committed scope — protect it. New urgent work goes through the backlog and counts as <b>scope churn</b> (amber "added" tag). Move a card to Done only when it meets your definition of done; the burndown and say/do ratio are computed from these moves.'}</div>
+  <div class="hint">${p.mode === 'kanban' ? t('h_board_kanban') : t('h_board_scrum')}</div>
   <div class="spacer" style="height:12px"></div>
   <div class="board">${cols}</div>`;
 }
 
 /* ---------- backlog & sprints ---------- */
 function viewBacklog(p){
-  const backlogTasks = p.tasks.filter(t => t.status === 'backlog' || (t.sprintId && p.sprints.find(s => s.id===t.sprintId && s.state==='planned')));
+  const backlogTasks = p.tasks.filter(x => x.status === 'backlog' || (x.sprintId && p.sprints.find(s => s.id===x.sprintId && s.state==='planned')));
   const as = activeSprint(p);
-  const sprintOpts = t => {
-    const opts = [`<option value="">— backlog —</option>`]
-      .concat(plannedSprints(p).map(s => `<option value="${s.id}" ${t.sprintId===s.id?'selected':''}>Sprint ${s.number} (planned)</option>`));
-    if (as) opts.push(`<option value="${as.id}" ${t.sprintId===as.id?'selected':''}>Sprint ${as.number} (active!)</option>`);
+  const sprintOpts = x => {
+    const opts = [`<option value="">${t('optBacklog')}</option>`]
+      .concat(plannedSprints(p).map(s => `<option value="${s.id}" ${x.sprintId===s.id?'selected':''}>${tf('optPlanned', s.number)}</option>`));
+    if (as) opts.push(`<option value="${as.id}" ${x.sprintId===as.id?'selected':''}>${tf('optActive', as.number)}</option>`);
     return opts.join('');
   };
-  const list = backlogTasks.map(t => `
+  const list = backlogTasks.map(x => `
     <div class="bl-item">
-      <span class="dot ${t.type}" style="width:8px;height:8px;border-radius:50%"></span>
-      <button class="tt" style="background:none;border:0;text-align:left;font:inherit;font-weight:600;cursor:pointer" data-action="open-task" data-id="${t.id}">${t.key} · ${esc(t.title)}</button>
-      ${p.mode==='scrum' ? `<span class="mono small mut">${t.points} pts</span>
-        <select data-action-change="assign-sprint" data-id="${t.id}" aria-label="Assign to sprint">${sprintOpts(t)}</select>` :
-        `<button class="btn sm accent" data-action="pull-task" data-id="${t.id}">pull to board →</button>`}
+      <span class="dot ${x.type}" style="width:8px;height:8px;border-radius:50%"></span>
+      <button class="tt" data-action="open-task" data-id="${x.id}">${x.key} · ${esc(x.title)}</button>
+      ${p.mode==='scrum' ? `<span class="mono small mut">${tf('ptsShort', x.points)}</span>
+        <select data-action-change="assign-sprint" data-id="${x.id}" aria-label="Assign to sprint">${sprintOpts(x)}</select>` :
+        `<button class="btn sm accent" data-action="pull-task" data-id="${x.id}">${t('pullBoard')}</button>`}
     </div>`).join('');
   const newTaskForm = `
     <div class="card" style="margin-bottom:14px">
-      <h3>New task</h3>
+      <h3>${t('newTask')}</h3>
       <div class="spacer" style="height:8px"></div>
       <form data-form="new-task">
-        <label class="f"><span class="lb">Title</span><input type="text" name="title" required placeholder="Verb + outcome, e.g. 'Add OTP retry limit'"></label>
+        <label class="f"><span class="lb">${t('tTitle')}</span><input type="text" name="title" required placeholder="${esc(t('tTitlePh'))}"></label>
         <div class="row">
-          <label class="f" style="flex:1"><span class="lb">Type</span><select name="type"><option value="story">Story</option><option value="bug">Bug</option><option value="chore">Chore</option></select></label>
-          <label class="f" style="flex:1"><span class="lb">Points</span><select name="points"><option>1</option><option>2</option><option selected>3</option><option>5</option><option>8</option><option>13</option></select></label>
+          <label class="f" style="flex:1"><span class="lb">${t('tType')}</span><select name="type"><option value="story">${t('ty_story')}</option><option value="bug">${t('ty_bug')}</option><option value="chore">${t('ty_chore')}</option></select></label>
+          <label class="f" style="flex:1"><span class="lb">${t('tPoints')}</span><select name="points"><option>1</option><option>2</option><option selected>3</option><option>5</option><option>8</option><option>13</option></select></label>
         </div>
-        <div class="hint">${p.mode==='scrum'
-          ? 'Slice small: anything above 8 points rarely finishes inside one sprint — split it. Points feed velocity, so estimate relative to past work, not hours.'
-          : 'In Kanban, counting <b>items</b> beats counting points — keep tasks similar-sized instead of estimating precisely. Points are optional here.'}</div>
-        <button class="btn accent" type="submit">Add to backlog</button>
+        <div class="hint">${p.mode==='scrum' ? t('h_points_scrum') : t('h_points_kanban')}</div>
+        <button class="btn accent" type="submit">${t('addBacklog')}</button>
       </form>
     </div>`;
   if (p.mode === 'kanban'){
     return `
-    <div class="hint">This is the replenishment queue. Keep it <b>ordered by value</b> — the top card is simply the next thing pulled when board capacity frees up. Reordering the queue is how priorities change in Kanban; nothing on the board gets disturbed.</div>
+    <div class="hint">${t('h_backlog_kanban')}</div>
     <div class="spacer" style="height:12px"></div>
-    <div class="grid2"><div>${list || '<div class="empty">Backlog is empty.</div>'}</div>${newTaskForm}</div>`;
+    <div class="grid2"><div>${list || `<div class="empty">${t('emptyBacklog')}</div>`}</div>${newTaskForm}</div>`;
   }
+  const vel = velocitySeries(p);
+  const avgVel = vel.length ? Math.round(vel.reduce((a,v)=>a+v.delivered,0)/vel.length) : null;
   const sprints = [
     ...(as ? [(() => { const bd = burndown(p, as); return `
       <div class="sprint-card active">
-        <div class="row" style="justify-content:space-between"><h4>Sprint ${as.number} · ACTIVE</h4>
-        <button class="btn sm" data-action="close-sprint" data-id="${as.id}">Close sprint</button></div>
-        ${as.goal?`<p class="g">Goal: ${esc(as.goal)}</p>`:''}
-        <p class="mono small mut">${bd.donePts}/${bd.total} pts · day ${bd.dayNow}/${bd.nDays}${bd.scopeAdded?' · +'+bd.scopeAdded+' pts added after start':''}</p>
-        <div class="hint">Closing computes delivered points and the say/do ratio, asks whether the goal was met, and returns unfinished work to the backlog — exactly what velocity needs to stay honest.</div>
+        <div class="row" style="justify-content:space-between"><h4>${tf('spActive', as.number)}</h4>
+        <button class="btn sm" data-action="close-sprint" data-id="${as.id}">${t('btnClose')}</button></div>
+        ${as.goal?`<p class="g">${t('goal')}: ${esc(as.goal)}</p>`:''}
+        <p class="mono small mut">${tf('spDayMeta', bd.donePts, bd.total, bd.dayNow, bd.nDays)}${bd.scopeAdded? tf('spChurn', bd.scopeAdded):''}</p>
+        <div class="hint">${t('h_sprint_close')}</div>
       </div>`})()] : []),
     ...plannedSprints(p).map(sp => {
-      const members = p.tasks.filter(t => t.sprintId === sp.id);
-      const pts = members.reduce((a,t)=>a+t.points,0);
-      const vel = velocitySeries(p);
-      const avgVel = vel.length ? Math.round(vel.reduce((a,v)=>a+v.delivered,0)/vel.length) : null;
+      const members = p.tasks.filter(x => x.sprintId === sp.id);
+      const pts = members.reduce((a,x)=>a+x.points,0);
       return `
       <div class="sprint-card">
-        <div class="row" style="justify-content:space-between"><h4>Sprint ${sp.number} · planned</h4>
-        <button class="btn sm accent" data-action="start-sprint" data-id="${sp.id}">Start sprint</button></div>
-        <label class="f" style="margin:8px 0"><span class="lb">Sprint goal</span>
-          <input type="text" data-action-change="sprint-goal" data-id="${sp.id}" value="${esc(sp.goal)}" placeholder="One sentence the review will demo against"></label>
-        <p class="mono small mut">${members.length} tasks · ${pts} pts assigned${avgVel!==null ? ' · recent velocity ≈ '+avgVel+' pts' : ''}</p>
-        <div class="hint">Commit to ${avgVel!==null ? 'about <b>'+avgVel+' pts</b> (your velocity), not what fits emotionally' : 'a modest scope — with no velocity history yet, under-commit and let data calibrate you'}. A written goal turns the sprint from a bucket of tickets into a promise.</div>
+        <div class="row" style="justify-content:space-between"><h4>${tf('spPlanned', sp.number)}</h4>
+        <button class="btn sm accent" data-action="start-sprint" data-id="${sp.id}">${t('btnStart')}</button></div>
+        <label class="f" style="margin:8px 0"><span class="lb">${t('goalLb')}</span>
+          <input type="text" data-action-change="sprint-goal" data-id="${sp.id}" value="${esc(sp.goal)}" placeholder="${esc(t('goalPh'))}"></label>
+        <p class="mono small mut">${tf('spMeta', members.length, pts)}${avgVel!==null ? tf('velRecent', avgVel) : ''}</p>
+        <div class="hint">${avgVel!==null ? tf('h_commitVel', avgVel) : t('h_commitNew')}</div>
       </div>`;})
   ].join('');
   const closed = closedSprints(p).map(sp => `
     <div class="sprint-card" style="border-left-color:#C9CFC7">
-      <h4>Sprint ${sp.number} · closed</h4>
-      <p class="mono small mut">committed ${sp.summary.committedPoints} → delivered ${sp.summary.deliveredPoints} pts (say/do ${sp.summary.committedPoints?Math.round(100*sp.summary.deliveredPoints/sp.summary.committedPoints):0}%) · goal ${sp.summary.goalMet?'met ✓':'missed ✗'}${sp.summary.addedPoints?' · +'+sp.summary.addedPoints+' churn':''}</p>
+      <h4>${tf('spClosed', sp.number)}</h4>
+      <p class="mono small mut">${tf('closedLine', sp.summary.committedPoints, sp.summary.deliveredPoints, sp.summary.committedPoints?Math.round(100*sp.summary.deliveredPoints/sp.summary.committedPoints):0, sp.summary.goalMet?t('met'):t('missed'))}${sp.summary.addedPoints? tf('churnSuffix', sp.summary.addedPoints):''}</p>
     </div>`).join('');
   return `
-  <div class="hint">The Scrum flow, left to right: <b>1)</b> add tasks to the backlog, <b>2)</b> create a sprint and assign tasks with the dropdowns, <b>3)</b> write a goal and press Start, <b>4)</b> work the Board, <b>5)</b> Close — metrics fill themselves.</div>
+  <div class="hint">${t('h_scrum_flow')}</div>
   <div class="spacer" style="height:12px"></div>
   <div class="grid2">
     <div>
-      <div class="row" style="justify-content:space-between;margin-bottom:10px"><h3>Backlog (${backlogTasks.length})</h3>
-      <button class="btn sm ghost" data-action="create-sprint">+ New sprint</button></div>
-      ${list || '<div class="empty">Backlog is empty — add a task on the right.</div>'}
+      <div class="row" style="justify-content:space-between;margin-bottom:10px"><h3>${tf('backlogN', backlogTasks.length)}</h3>
+      <button class="btn sm ghost" data-action="create-sprint">${t('newSprint')}</button></div>
+      ${list || `<div class="empty">${t('emptyBacklogR')}</div>`}
     </div>
     <div>${newTaskForm}${sprints}${closed}</div>
   </div>`;
 }
+
 /* ---------- metrics ---------- */
 function viewMetrics(p){
+  const fd = v => v === null ? t('na') : (Math.round(v*10)/10) + t('d');
   if (p.mode === 'kanban'){
     const m = kanbanMetrics(p);
-    const fmt = v => v === null ? '—' : (Math.round(v*10)/10) + 'd';
     return `
-    <div class="hint">Read flow health in this order: <b>WIP</b> (are we overloaded?), <b>item age</b> (what needs intervention today?), <b>cycle time P85</b> (what can we promise?), <b>throughput</b> (what feeds the forecast?). The CFD shows all of it at once — band thickness is WIP, a widening band is a bottleneck.</div>
+    <div class="hint">${t('h_metrics_kanban')}</div>
     <div class="spacer" style="height:14px"></div>
     <div class="grid3">
-      <div class="stat ${m.wipNow > p.settings.wipDoing + p.settings.wipReview ? 'warn':''}"><div class="l">WIP now</div><div class="v">${m.wipNow}</div><div class="sub">limits: ${p.settings.wipDoing} doing + ${p.settings.wipReview} review</div></div>
-      <div class="stat"><div class="l">Cycle time P85</div><div class="v">${fmt(m.p85)}</div><div class="sub">median ${fmt(m.p50)} · quote the P85, not the average</div></div>
-      <div class="stat"><div class="l">Throughput</div><div class="v">${Math.round(m.tpAvg*10)/10}/wk</div><div class="sub">avg over last 6 weeks · ${m.blocked.length} blocked now</div></div>
+      <div class="stat ${m.wipNow > p.settings.wipDoing + p.settings.wipReview ? 'warn':''}"><div class="l">${t('m_wip')}</div><div class="v">${m.wipNow}</div><div class="sub">${tf('m_wipSub', p.settings.wipDoing, p.settings.wipReview)}</div></div>
+      <div class="stat"><div class="l">${t('m_ct')}</div><div class="v">${fd(m.p85)}</div><div class="sub">${tf('m_ctSub', fd(m.p50))}</div></div>
+      <div class="stat"><div class="l">${t('m_tp')}</div><div class="v">${Math.round(m.tpAvg*10)/10}${t('perWk')}</div><div class="sub">${tf('m_tpSub', m.blocked.length)}</div></div>
     </div>
-    <div class="chartcard"><h3>Throughput — items done per week</h3>
-      <div class="hint">This series is your forecasting fuel: "when will these 20 items be done?" = simulate against these weekly numbers and quote the 85% confidence week.</div>
+    <div class="chartcard"><h3>${t('ch_tp')}</h3>
+      <div class="hint">${t('h_tp')}</div>
       ${svgBars(m.weeks.map(w => ({label:w.label, v:w.v})), {color:'var(--flow)'})}</div>
-    <div class="chartcard"><h3>Cumulative flow — last 28 days</h3>
-      <div class="hint">Bottom band (teal) = done, then review (amber), in progress (indigo), queued (gray). Healthy = bands rising in parallel. Widening indigo/amber = bottleneck forming. Flat teal edge = nothing shipping.</div>
+    <div class="chartcard"><h3>${t('ch_cfd')}</h3>
+      <div class="hint">${t('h_cfd')}</div>
       ${svgCFD(cfdSeries(p))}</div>
-    <div class="chartcard"><h3>Work item age — in flight</h3>
-      <div class="hint">The leading indicator: anything older than your P85 (${fmt(m.p85)}) is flagged. Intervene <i>before</i> it becomes bad cycle-time data — swarm it, split it, or kill it.</div>
-      <ul class="aging" style="list-style:none">${m.aging.slice(0,8).map(a => `
-        <li><span>${a.t.key} · ${esc(a.t.title)}${a.t.blocked?' <span class="mono" style="color:var(--red)">[blocked]</span>':''}</span>
-        <span class="${m.p85 && a.age > m.p85 ? 'old':'mono small mut'}">${Math.round(a.age*10)/10}d${m.p85 && a.age > m.p85 ? ' ⚠':''}</span></li>`).join('') || '<li class="mut">Nothing in flight.</li>'}</ul></div>`;
+    <div class="chartcard"><h3>${t('ch_age')}</h3>
+      <div class="hint">${tf('h_age', fd(m.p85))}</div>
+      <ul class="aging">${m.aging.slice(0,8).map(a => `
+        <li><span>${a.t.key} · ${esc(a.t.title)}${a.t.blocked?' <span class="mono" style="color:var(--red)">'+t('blockedTag')+'</span>':''}</span>
+        <span class="${m.p85 && a.age > m.p85 ? 'old':'mono small mut'}">${Math.round(a.age*10)/10}${t('d')}${m.p85 && a.age > m.p85 ? ' ⚠':''}</span></li>`).join('') || `<li class="mut">${t('nothingFlight')}</li>`}</ul></div>`;
   }
   const vel = velocitySeries(p);
   const as = activeSprint(p);
   const avgVel = vel.length ? Math.round(vel.reduce((a,v)=>a+v.delivered,0)/vel.length) : null;
   const lastSayDo = vel.length ? Math.round(100*vel[vel.length-1].delivered/Math.max(1,vel[vel.length-1].committed)) : null;
   return `
-  <div class="hint">The Scrum health check: <b>velocity</b> trend (is the forecast stable?), <b>say/do</b> (can promises be trusted? healthy ≈ 80–90%), <b>burndown</b> (is this sprint on track?), <b>churn</b> (is scope discipline holding?). Velocity is a planning input — the moment it becomes a target, it gets gamed.</div>
+  <div class="hint">${t('h_metrics_scrum')}</div>
   <div class="spacer" style="height:14px"></div>
   <div class="grid3">
-    <div class="stat"><div class="l">Avg velocity</div><div class="v">${avgVel ?? '—'}</div><div class="sub">${vel.length} closed sprint${vel.length===1?'':'s'}${vel.length<3?' · needs 3–4 to stabilize':''}</div></div>
-    <div class="stat ${lastSayDo !== null && lastSayDo < 70 ? 'warn':''}"><div class="l">Say/do (last sprint)</div><div class="v">${lastSayDo === null ? '—' : lastSayDo + '%'}</div><div class="sub">${lastSayDo === null ? 'close a sprint to compute' : lastSayDo >= 100 ? 'suspiciously perfect — sandbagging?' : lastSayDo >= 80 ? 'healthy commitment' : 'commitments not holding'}</div></div>
-    <div class="stat"><div class="l">Goals met</div><div class="v">${vel.length ? vel.filter(v=>v.goalMet).length + '/' + vel.length : '—'}</div><div class="sub">independent of points burned</div></div>
+    <div class="stat"><div class="l">${t('m_vel')}</div><div class="v">${avgVel ?? t('na')}</div><div class="sub">${tf('m_velSub', vel.length)}${vel.length<3? t('m_velStab'):''}</div></div>
+    <div class="stat ${lastSayDo !== null && lastSayDo < 70 ? 'warn':''}"><div class="l">${t('m_sd')}</div><div class="v">${lastSayDo === null ? t('na') : lastSayDo + '%'}</div><div class="sub">${lastSayDo === null ? t('sdNone') : lastSayDo >= 100 ? t('sdPerfect') : lastSayDo >= 80 ? t('sdOk') : t('sdBad')}</div></div>
+    <div class="stat"><div class="l">${t('m_goals')}</div><div class="v">${vel.length ? vel.filter(v=>v.goalMet).length + '/' + vel.length : t('na')}</div><div class="sub">${t('m_goalsSub')}</div></div>
   </div>
-  ${vel.length ? `<div class="chartcard"><h3>Velocity — delivered pts per sprint (dashed = committed)</h3>
-    <div class="hint">A widening gap between dashed (committed) and solid (delivered) = say/do eroding. Never compare this chart across teams — points are a local currency.</div>
+  ${vel.length ? `<div class="chartcard"><h3>${t('ch_vel')}</h3>
+    <div class="hint">${t('h_vel')}</div>
     ${svgBars(vel.map(v => ({label:'S'+v.n, v:v.delivered, g:v.committed})), {color:'var(--sprint)', ghost:true})}</div>` : ''}
-  ${as ? (() => { const bd = burndown(p, as); return `<div class="chartcard"><h3>Sprint ${as.number} burndown</h3>
-    <div class="hint">Above the dashed ideal = behind; flat segment = blocked or an unupdated board; a step <i>up</i> = scope injected. ${bd.scopeAdded ? '<b>+'+bd.scopeAdded+' pts were added after start — that\'s churn, raise it in standup.</b>' : 'No scope added since start — discipline holding.'}</div>
-    ${svgBurndown(bd)}</div>`})() : '<div class="empty">No active sprint — start one to see the burndown.</div>'}`;
+  ${as ? (() => { const bd = burndown(p, as); return `<div class="chartcard"><h3>${tf('ch_bd', as.number)}</h3>
+    <div class="hint">${t('h_bd')}${bd.scopeAdded ? tf('h_bd_churn', bd.scopeAdded) : t('h_bd_clean')}</div>
+    ${svgBurndown(bd)}</div>`})() : `<div class="empty">${t('noBd')}</div>`}`;
 }
 
 /* ---------- reports ---------- */
 function buildReport(p){
   const d = new Date().toISOString().slice(0,10);
-  const done7 = p.tasks.filter(t => t.doneAt && Date.now() - t.doneAt < 7*DAY);
-  const blocked = p.tasks.filter(t => t.blocked && t.status !== 'done');
-  let out = `# Status report — ${p.name}\nDate: ${d} · Mode: ${p.mode === 'scrum' ? 'Sprint (Scrum)' : 'Kanban'}\n\n`;
+  const done7 = p.tasks.filter(x => x.doneAt && Date.now() - x.doneAt < 7*DAY);
+  const blocked = p.tasks.filter(x => x.blocked && x.status !== 'done');
+  const fd = v => v === null ? t('na') : (Math.round(v*10)/10) + t('d');
+  let out = `# ${t('r_title')} — ${p.name}\n${t('r_date')}: ${d} · ${t('r_mode')}: ${p.mode === 'scrum' ? t('r_modeS') : t('r_modeK')}\n\n`;
   if (p.mode === 'scrum'){
     const as = activeSprint(p), vel = velocitySeries(p);
     if (as){
       const bd = burndown(p, as);
       const expected = bd.total * (1 - bd.dayNow/bd.nDays);
       const remaining = bd.actual[bd.actual.length-1];
-      out += `## Current sprint (S${as.number}, day ${bd.dayNow}/${bd.nDays})\n`;
-      if (as.goal) out += `Goal: ${as.goal}\n`;
-      out += `Progress: ${bd.donePts}/${bd.total} pts done · remaining ${remaining} vs ~${Math.round(expected)} expected → ${remaining <= expected + 2 ? 'ON TRACK' : 'AT RISK'}\n`;
-      if (bd.scopeAdded) out += `Scope churn: +${bd.scopeAdded} pts added after sprint start\n`;
+      out += `## ${t('r_curSprint')} (S${as.number}, ${tf('ch_day', bd.dayNow + '/' + bd.nDays)})\n`;
+      if (as.goal) out += `${t('r_goal')}: ${as.goal}\n`;
+      out += tf('r_progress', bd.donePts, bd.total, remaining, Math.round(expected), remaining <= expected + 2 ? t('r_onTrack') : t('r_atRisk')) + '\n';
+      if (bd.scopeAdded) out += tf('r_churn', bd.scopeAdded) + '\n';
       out += '\n';
-    } else out += `## Current sprint\nNo active sprint.\n\n`;
+    } else out += `## ${t('r_curSprint')}\n${t('r_noSprint')}\n\n`;
     if (vel.length){
       const last = vel[vel.length-1];
-      out += `## Delivery trend\nAvg velocity: ${Math.round(vel.reduce((a,v)=>a+v.delivered,0)/vel.length)} pts over ${vel.length} sprints\n`;
-      out += `Last sprint say/do: ${Math.round(100*last.delivered/Math.max(1,last.committed))}% (${last.delivered}/${last.committed} pts) · goal ${last.goalMet?'met':'missed'}\n\n`;
+      out += `## ${t('r_trend')}\n` + tf('r_avgVel', Math.round(vel.reduce((a,v)=>a+v.delivered,0)/vel.length), vel.length) + '\n';
+      out += tf('r_sayDo', Math.round(100*last.delivered/Math.max(1,last.committed)), last.delivered, last.committed, last.goalMet?t('r_met'):t('r_missed')) + '\n\n';
     }
   } else {
     const m = kanbanMetrics(p);
-    out += `## Flow health\nThroughput: ${m.weeks[5].v} items this week (6-wk avg ${Math.round(m.tpAvg*10)/10}/wk)\n`;
-    out += `Cycle time: P85 ${m.p85 ? Math.round(m.p85*10)/10 + 'd' : 'n/a'} · median ${m.p50 ? Math.round(m.p50*10)/10 + 'd' : 'n/a'}\n`;
-    out += `WIP: ${m.wipNow} in flight (limits ${p.settings.wipDoing}+${p.settings.wipReview})\n`;
+    out += `## ${t('r_flow')}\n` + tf('r_tp', m.weeks[5].v, Math.round(m.tpAvg*10)/10) + '\n';
+    out += tf('r_ct', fd(m.p85), fd(m.p50)) + '\n';
+    out += tf('r_wip', m.wipNow, p.settings.wipDoing, p.settings.wipReview) + '\n';
     const over = m.aging.filter(a => m.p85 && a.age > m.p85);
-    if (over.length) out += `Aging beyond P85: ${over.map(a => a.t.key).join(', ')}\n`;
+    if (over.length) out += tf('r_aging', over.map(a => a.t.key).join(', ')) + '\n';
     out += '\n';
   }
-  out += `## Shipped in the last 7 days (${done7.length})\n${done7.map(t => `- ${t.key} ${t.title}`).join('\n') || '- nothing closed this week'}\n\n`;
-  out += `## Risks & blockers (${blocked.length})\n${blocked.map(t => `- ${t.key} ${t.title} — blocked`).join('\n') || '- none flagged'}\n`;
+  out += `## ${tf('r_shipped', done7.length)}\n${done7.map(x => `- ${x.key} ${x.title}`).join('\n') || t('r_nothing')}\n\n`;
+  out += `## ${tf('r_risks', blocked.length)}\n${blocked.map(x => `- ${x.key} ${x.title} — ${t('r_blocked')}`).join('\n') || t('r_none')}\n`;
   return out;
 }
 function viewReports(p){
   return `
-  <div class="hint">This generates an exec-ready markdown status: an on-track verdict computed from real board data, delivery trend, what shipped, and blockers. Paste into Slack/email or download. Rule of thumb for the audience: <b>verdict first, evidence second, asks last</b> — executives read the first three lines.</div>
+  <div class="hint">${t('h_report')}</div>
   <div class="spacer" style="height:12px"></div>
   <div class="row" style="margin-bottom:12px">
-    <button class="btn accent" data-action="gen-report">Generate report</button>
-    <button class="btn ghost" data-action="copy-report">Copy</button>
-    <button class="btn ghost" data-action="download-report">Download .md</button>
+    <button class="btn accent" data-action="gen-report">${t('btnGen')}</button>
+    <button class="btn ghost" data-action="copy-report">${t('btnCopy')}</button>
+    <button class="btn ghost" data-action="download-report">${t('btnDl')}</button>
   </div>
-  <textarea id="reportOut" aria-label="Generated report" placeholder="Press Generate — the report is built from the live project data."></textarea>`;
+  <textarea id="reportOut" aria-label="Generated report" placeholder="${esc(t('reportPh'))}"></textarea>`;
 }
 
 /* ---------- settings ---------- */
@@ -685,128 +909,129 @@ function viewSettings(p){
   return `
   <div class="grid2">
     <div class="card">
-      <h3>Project settings</h3>
+      <h3>${t('s_settings')}</h3>
       <div class="spacer" style="height:10px"></div>
-      <label class="f"><span class="lb">Name</span><input type="text" data-action-change="set-name" value="${esc(p.name)}"></label>
-      <label class="f"><span class="lb">Sprint length (days)</span><input type="number" min="7" max="28" data-action-change="set-sprintlen" value="${p.settings.sprintLen}">
-        <div class="hint">Applies to sprints started after the change.</div></label>
+      <label class="f"><span class="lb">${t('s_name')}</span><input type="text" data-action-change="set-name" value="${esc(p.name)}"></label>
+      <label class="f"><span class="lb">${t('s_len')}</span><input type="number" min="7" max="28" data-action-change="set-sprintlen" value="${p.settings.sprintLen}">
+        <div class="hint">${t('h_slen')}</div></label>
       <div class="row">
-        <label class="f" style="flex:1"><span class="lb">WIP limit — in progress</span><input type="number" min="1" data-action-change="set-wipdoing" value="${p.settings.wipDoing}"></label>
-        <label class="f" style="flex:1"><span class="lb">WIP limit — in review</span><input type="number" min="1" data-action-change="set-wipreview" value="${p.settings.wipReview}"></label>
+        <label class="f" style="flex:1"><span class="lb">${t('s_wipD')}</span><input type="number" min="1" data-action-change="set-wipdoing" value="${p.settings.wipDoing}"></label>
+        <label class="f" style="flex:1"><span class="lb">${t('s_wipR')}</span><input type="number" min="1" data-action-change="set-wipreview" value="${p.settings.wipReview}"></label>
       </div>
-      <div class="hint">Breaching a limit turns the column red on the board. Tighten limits gradually — the goal is a conversation, not a police state.</div>
+      <div class="hint">${t('h_wiplimits')}</div>
     </div>
     <div>
       <div class="card">
-        <h3>Data</h3>
+        <h3>${t('s_data')}</h3>
         <div class="spacer" style="height:10px"></div>
         <div class="row">
-          <button class="btn ghost" data-action="export-data">Export all (JSON)</button>
-          <label class="btn ghost" style="display:inline-block">Import JSON<input type="file" id="importFile" accept=".json" style="display:none"></label>
+          <button class="btn ghost" data-action="export-data">${t('s_export')}</button>
+          <label class="btn ghost" style="display:inline-block">${t('s_import')}<input type="file" id="importFile" accept=".json" style="display:none"></label>
         </div>
-        <div class="hint">Everything lives in this browser's localStorage — clearing site data erases it. Export weekly; import restores or moves between machines. This exact JSON is also what the future cloud sync will push to Supabase.</div>
+        <div class="hint">${t('h_data')}</div>
       </div>
       <div class="spacer" style="height:14px"></div>
       <div class="card">
-        <h3>Cloud sync — planned</h3>
-        <p class="mut small" style="margin-top:6px">Next phase: sign-in + sync to Supabase (Postgres with row-level security), so projects follow you across devices and support sharing. The storage layer here is already isolated behind load/save, so the swap is additive. See SUPABASE_PLAN.md shipped alongside this file.</p>
+        <h3>${t('s_cloud')}</h3>
+        <p class="mut small" style="margin-top:6px">${t('s_cloudSub')}</p>
       </div>
       <div class="spacer" style="height:14px"></div>
       <div class="card" style="border-color:var(--red)">
-        <h3 style="color:var(--red)">Danger zone</h3>
+        <h3 style="color:var(--red)">${t('s_danger')}</h3>
         <div class="spacer" style="height:8px"></div>
-        <button class="btn danger" data-action="delete-project" data-id="${p.id}">Delete this project</button>
+        <button class="btn danger" data-action="delete-project" data-id="${p.id}">${t('s_delete')}</button>
       </div>
     </div>
   </div>`;
 }
 
 /* ---------- task modal ---------- */
-function openTask(p, t){
+function openTask(p, x){
   const box = document.getElementById('modalBox');
   const sprintSel = p.mode === 'scrum' ? `
-    <label class="f"><span class="lb">Sprint</span><select id="mSprint">
-      <option value="">— backlog —</option>
-      ${p.sprints.filter(s => s.state !== 'closed').map(s => `<option value="${s.id}" ${t.sprintId===s.id?'selected':''}>Sprint ${s.number} (${s.state})</option>`).join('')}
+    <label class="f"><span class="lb">${t('mSprint')}</span><select id="mSprint">
+      <option value="">${t('optBacklog')}</option>
+      ${p.sprints.filter(s => s.state !== 'closed').map(s => `<option value="${s.id}" ${x.sprintId===s.id?'selected':''}>${s.state==='active' ? tf('optActive', s.number) : tf('optPlanned', s.number)}</option>`).join('')}
     </select></label>` : '';
   box.innerHTML = `
-    <h3>${t.key} <span class="mut" style="font-weight:400;font-size:14px">· created ${fmtD(t.createdAt)}</span></h3>
-    <label class="f"><span class="lb">Title</span><input type="text" id="mTitle" value="${esc(t.title)}"></label>
-    <label class="f"><span class="lb">Description</span><textarea id="mDesc">${esc(t.desc)}</textarea></label>
+    <h3>${x.key} <span class="mut" style="font-weight:400;font-size:14px">· ${tf('mCreated', fmtD(x.createdAt))}</span></h3>
+    <label class="f"><span class="lb">${t('tTitle')}</span><input type="text" id="mTitle" value="${esc(x.title)}"></label>
+    <label class="f"><span class="lb">${t('mDesc')}</span><textarea id="mDesc">${esc(x.desc)}</textarea></label>
     <div class="row">
-      <label class="f" style="flex:1"><span class="lb">Type</span><select id="mType">${['story','bug','chore'].map(x=>`<option ${t.type===x?'selected':''}>${x}</option>`).join('')}</select></label>
-      <label class="f" style="flex:1"><span class="lb">Points</span><input type="number" id="mPts" min="0" value="${t.points}"></label>
-      <label class="f" style="flex:1"><span class="lb">Status</span><select id="mStatus">${STATUSES.map(x=>`<option value="${x}" ${t.status===x?'selected':''}>${LABEL[x]}</option>`).join('')}</select></label>
+      <label class="f" style="flex:1"><span class="lb">${t('tType')}</span><select id="mType">${['story','bug','chore'].map(y=>`<option value="${y}" ${x.type===y?'selected':''}>${t('ty_'+y)}</option>`).join('')}</select></label>
+      <label class="f" style="flex:1"><span class="lb">${t('tPoints')}</span><input type="number" id="mPts" min="0" value="${x.points}"></label>
+      <label class="f" style="flex:1"><span class="lb">${t('mStatus')}</span><select id="mStatus">${STATUSES.map(y=>`<option value="${y}" ${x.status===y?'selected':''}>${L(y)}</option>`).join('')}</select></label>
     </div>
     ${sprintSel}
-    <label class="f" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="mBlocked" ${t.blocked?'checked':''} style="width:16px;height:16px;accent-color:var(--red)"> <span>Blocked / impediment</span></label>
-    <div class="hint">Flag blockers instead of silently waiting — they surface in metrics and in the report's risk section. ${t.startedAt && !t.doneAt ? 'This item has been in flight <b>' + daysAgo(t.startedAt) + ' days</b>.' : ''}</div>
+    <label class="f" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="mBlocked" ${x.blocked?'checked':''} style="width:16px;height:16px;accent-color:var(--red)"> <span>${t('mBlocked')}</span></label>
+    <div class="hint">${t('h_blocked')}${x.startedAt && !x.doneAt ? tf('h_flight', daysAgo(x.startedAt)) : ''}</div>
     <div class="spacer" style="height:8px"></div>
     <div class="row" style="justify-content:space-between">
-      <button class="btn danger sm" data-action="delete-task" data-id="${t.id}">Delete</button>
+      <button class="btn danger sm" data-action="delete-task" data-id="${x.id}">${t('mDelete')}</button>
       <span class="row">
-        <button class="btn ghost" data-action="close-modal">Cancel</button>
-        <button class="btn accent" data-action="save-task" data-id="${t.id}">Save</button>
+        <button class="btn ghost" data-action="close-modal">${t('mCancel')}</button>
+        <button class="btn accent" data-action="save-task" data-id="${x.id}">${t('mSave')}</button>
       </span>
     </div>`;
   document.getElementById('modal').classList.add('open');
 }
+
 /* ================= demo data ================= */
 function seedDemo(){
   const now = Date.now();
   const rnd = (a,b) => a + Math.random()*(b-a);
-  /* --- kanban demo --- */
-  const k = createProject({name:'Support stream — cards', mode:'kanban', wipDoing:4, wipReview:2});
+  const vi = S.lang === 'vi';
+  const k = createProject({name: vi ? 'Luồng hỗ trợ — thẻ' : 'Support stream — cards', mode:'kanban', wipDoing:4, wipReview:2});
   const titles = ['OTP retry limit for card activation','3DS challenge fails on older devices','Refund status copy unclear','Push notification dedupe','Card freeze toggle lags','Statement PDF locale bug','Limit change form validation','Failed top-up retry loop','FAQ deep links broken','ATM locator radius wrong','Chat handoff loses context','KYC photo upload timeout','Reissue flow date picker','Apple Pay provisioning error','Cashback rounding mismatch','Login rate limiter too strict','Transaction search accents','PIN change happy-path polish','Standing order edit crash','Onboarding progress bar stuck','Marketing consent copy','Currency FX tooltip','Widget balance stale','Dark mode contrast pass','Card art preview cache','Push token refresh'];
   titles.forEach((title, i) => {
     const created = now - rnd(3,30)*DAY;
     const type = i % 3 === 0 ? 'bug' : (i % 5 === 0 ? 'chore' : 'story');
-    const t = createTask(k, {title, type, points: [1,2,3,5][i%4], status:'backlog'});
-    t.createdAt = created; t.history = [{ts:created, from:null, to:'backlog'}];
+    const x = createTask(k, {title, type, points: [1,2,3,5][i%4], status:'backlog'});
+    x.createdAt = created; x.history = [{ts:created, from:null, to:'backlog'}];
     const r = Math.random();
-    if (r < .82){                                     // pulled to board
+    if (r < .82){
       const pulled = created + rnd(.2,3)*DAY;
-      t.history.push({ts:pulled, from:'backlog', to:'todo'}); t.status='todo';
-      if (r < .72){                                   // started
+      x.history.push({ts:pulled, from:'backlog', to:'todo'}); x.status='todo';
+      if (r < .72){
         const started = pulled + rnd(.2,2)*DAY;
-        t.startedAt = started; t.history.push({ts:started, from:'todo', to:'doing'}); t.status='doing';
-        if (r < .5){                                  // done
+        x.startedAt = started; x.history.push({ts:started, from:'todo', to:'doing'}); x.status='doing';
+        if (r < .5){
           const rev = started + rnd(.5,4)*DAY;
           const done = Math.min(now - rnd(0,.5)*DAY, rev + rnd(.3,3)*DAY);
-          t.history.push({ts:rev, from:'doing', to:'review'});
-          t.history.push({ts:done, from:'review', to:'done'});
-          t.status='done'; t.doneAt = done;
+          x.history.push({ts:rev, from:'doing', to:'review'});
+          x.history.push({ts:done, from:'review', to:'done'});
+          x.status='done'; x.doneAt = done;
         } else if (r < .62){
-          t.history.push({ts:started + rnd(.5,3)*DAY, from:'doing', to:'review'}); t.status='review';
+          x.history.push({ts:started + rnd(.5,3)*DAY, from:'doing', to:'review'}); x.status='review';
         }
       }
     }
   });
   k.tasks[10].blocked = true; k.tasks[16].blocked = true;
-  /* --- scrum demo --- */
-  const s = createProject({name:'Onboarding revamp', mode:'scrum', sprintLen:14});
+  const s = createProject({name: vi ? 'Cải tổ onboarding' : 'Onboarding revamp', mode:'scrum', sprintLen:14});
   const mk = (title, pts, sprintId, doneAtTs, status='done') => {
-    const t = createTask(s, {title, points:pts, status:'backlog', sprintId});
+    const x = createTask(s, {title, points:pts, status:'backlog', sprintId});
     const created = (doneAtTs || now) - rnd(6,16)*DAY;
-    t.createdAt = created; t.history = [{ts:created, from:null, to:'backlog'}];
+    x.createdAt = created; x.history = [{ts:created, from:null, to:'backlog'}];
     if (status !== 'backlog'){
       const start = (doneAtTs || now) - rnd(2,6)*DAY;
-      t.startedAt = start;
-      t.history.push({ts:start - rnd(.5,2)*DAY, from:'backlog', to:'todo'});
-      t.history.push({ts:start, from:'todo', to:'doing'});
-      t.status = 'doing';
-      if (status === 'review' || status === 'done') { t.history.push({ts:start + rnd(.5,2)*DAY, from:'doing', to:'review'}); t.status='review'; }
-      if (status === 'done'){ t.history.push({ts:doneAtTs, from:'review', to:'done'}); t.status='done'; t.doneAt = doneAtTs; }
+      x.startedAt = start;
+      x.history.push({ts:start - rnd(.5,2)*DAY, from:'backlog', to:'todo'});
+      x.history.push({ts:start, from:'todo', to:'doing'});
+      x.status = 'doing';
+      if (status === 'review' || status === 'done') { x.history.push({ts:start + rnd(.5,2)*DAY, from:'doing', to:'review'}); x.status='review'; }
+      if (status === 'done'){ x.history.push({ts:doneAtTs, from:'review', to:'done'}); x.status='done'; x.doneAt = doneAtTs; }
     }
-    return t;
+    return x;
   };
+  const parts = ['welcome screen','doc scan flow','address autofill','progress indicator','error states','analytics events','copy pass'];
   [[1, now-35*DAY, now-21*DAY, 24, 21, true, 0], [2, now-21*DAY, now-7*DAY, 26, 19, false, 5]].forEach(([n, st, en, com, del, goal, add]) => {
     const sp = { id: uid(), number:n, goal: n===1?'Ship the new welcome flow skeleton':'KYC step reduced to two screens', state:'closed', startAt:st, endAt:en, committedIds:[], committedPoints:com, summary:{committedPoints:com, deliveredPoints:del, addedPoints:add, goalMet:goal, closedAt:en} };
     s.sprints.push(sp);
     let left = del;
-    while (left > 0){ const pts = Math.min(left, [3,5,8][Math.floor(rnd(0,3))]); mk('S'+n+' — '+['welcome screen','doc scan flow','address autofill','progress indicator','error states','analytics events','copy pass'][Math.floor(rnd(0,7))], pts, sp.id, st + rnd(.25,.95)*(en-st)); left -= pts; }
+    while (left > 0){ const pts = Math.min(left, [3,5,8][Math.floor(rnd(0,3))]); mk('S'+n+' — '+parts[Math.floor(rnd(0,7))], pts, sp.id, st + rnd(.25,.95)*(en-st)); left -= pts; }
   });
-  const as = { id: uid(), number:3, goal:'Cut onboarding drop-off on the phone-verify step', state:'active', startAt: now-6*DAY, endAt: now+8*DAY, committedIds:[], committedPoints:0, summary:null };
+  const as = { id: uid(), number:3, goal: vi ? 'Giảm tỉ lệ rớt ở bước xác minh số điện thoại' : 'Cut onboarding drop-off on the phone-verify step', state:'active', startAt: now-6*DAY, endAt: now+8*DAY, committedIds:[], committedPoints:0, summary:null };
   s.sprints.push(as);
   const a1 = mk('Resend-code cooldown UX', 5, as.id, now-4*DAY, 'done');
   const a2 = mk('Fallback to voice call', 5, as.id, now-1.5*DAY, 'done');
@@ -815,27 +1040,28 @@ function seedDemo(){
   const a5 = mk('Analytics for verify funnel', 3, as.id, null, 'doing');
   const a6 = mk('A/B test scaffolding', 2, as.id, null, 'backlog'); setStatus(s, a6, 'todo');
   const a7 = mk('Hotfix: crash on paste', 2, as.id, null, 'doing'); a7.addedAfterStart = true;
-  as.committedIds = [a1,a2,a3,a4,a5,a6].map(t=>t.id);
+  as.committedIds = [a1,a2,a3,a4,a5,a6].map(x=>x.id);
   as.committedPoints = 23;
   mk('Passkey sign-in spike', 8, null, null, 'backlog');
   mk('Referral code at signup', 5, null, null, 'backlog');
   mk('Localize onboarding VN', 5, null, null, 'backlog');
   S.activeProjectId = null;
-  toast('Demo projects loaded');
+  toast(t('t_demo'));
 }
 
 /* ================= drag & drop ================= */
 function bindDnD(p){
   app.querySelectorAll('.task[draggable]').forEach(el => {
-    el.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', el.dataset.task); e.dataTransfer.effectAllowed = 'move'; });
+    el.addEventListener('dragstart', e => { el.classList.add('dragging'); e.dataTransfer.setData('text/plain', el.dataset.task); e.dataTransfer.effectAllowed = 'move'; });
+    el.addEventListener('dragend', () => el.classList.remove('dragging'));
   });
   app.querySelectorAll('[data-drop]').forEach(col => {
     col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('over'); });
     col.addEventListener('dragleave', () => col.classList.remove('over'));
     col.addEventListener('drop', e => {
       e.preventDefault(); col.classList.remove('over');
-      const t = taskById(p, e.dataTransfer.getData('text/plain'));
-      if (t){ setStatus(p, t, col.dataset.drop); render(); }
+      const x = taskById(p, e.dataTransfer.getData('text/plain'));
+      if (x){ setStatus(p, x, col.dataset.drop); render(); }
     });
   });
 }
@@ -850,48 +1076,49 @@ document.addEventListener('click', e => {
     'open-project': () => { S.activeProjectId = id; S.tab = 'board'; render(); },
     'tab': () => { S.tab = id; render(); },
     'toggle-coach': () => { S.coach = !S.coach; render(); },
+    'set-lang': () => { S.lang = el.dataset.lang; render(); },
     'seed-demo': () => { seedDemo(); render(); },
-    'pick-mode': () => {                              // in create form (no re-render: keep typed values)
+    'pick-mode': () => {
       const seg = el.closest('.seg');
       seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b===el)));
       el.closest('form').querySelector('[name=mode]').value = el.dataset.m;
     },
     'set-mode': () => {
       if (!p || p.mode === el.dataset.m) return;
-      if (el.dataset.m === 'kanban' && activeSprint(p) && !confirm('Switching to Kanban: the active sprint stays recorded, but the board becomes continuous flow with WIP limits. Continue?')) return;
-      p.mode = el.dataset.m; toast('Mode: ' + (p.mode==='scrum'?'Sprint':'Kanban')); render();
+      if (el.dataset.m === 'kanban' && activeSprint(p) && !confirm(t('c_kanban'))) return;
+      p.mode = el.dataset.m; toast(tf('t_mode', p.mode==='scrum'?'Sprint':'Kanban')); render();
     },
     'open-task': () => { if (p) openTask(p, taskById(p, id)); },
     'close-modal': () => document.getElementById('modal').classList.remove('open'),
     'move-left': () => { moveTask(p, taskById(p,id), -1); render(); },
     'move-right': () => { moveTask(p, taskById(p,id), 1); render(); },
-    'pull-task': () => { setStatus(p, taskById(p,id), 'todo'); toast('Pulled to board'); render(); },
+    'pull-task': () => { setStatus(p, taskById(p,id), 'todo'); toast(t('t_pulled')); render(); },
     'create-sprint': () => { createSprint(p); render(); },
     'start-sprint': () => { startSprint(p, p.sprints.find(s=>s.id===id)); render(); },
     'close-sprint': () => { closeSprint(p, p.sprints.find(s=>s.id===id)); render(); },
     'save-task': () => {
-      const t = taskById(p, id), g = x => document.getElementById(x);
-      t.title = g('mTitle').value.trim() || t.title; t.desc = g('mDesc').value;
-      t.type = g('mType').value; t.points = +g('mPts').value || 0; t.blocked = g('mBlocked').checked;
-      const st = g('mStatus').value; if (st !== t.status) setStatus(p, t, st);
+      const x = taskById(p, id), g = y => document.getElementById(y);
+      x.title = g('mTitle').value.trim() || x.title; x.desc = g('mDesc').value;
+      x.type = g('mType').value; x.points = +g('mPts').value || 0; x.blocked = g('mBlocked').checked;
+      const st = g('mStatus').value; if (st !== x.status) setStatus(p, x, st);
       const sSel = g('mSprint');
       if (sSel){
         const nsid = sSel.value || null;
-        if (nsid !== t.sprintId){
-          t.sprintId = nsid;
+        if (nsid !== x.sprintId){
+          x.sprintId = nsid;
           const as = activeSprint(p);
-          t.addedAfterStart = !!(nsid && as && nsid === as.id);
+          x.addedAfterStart = !!(nsid && as && nsid === as.id);
         }
       }
       document.getElementById('modal').classList.remove('open'); render();
     },
-    'delete-task': () => { if (confirm('Delete this task?')){ p.tasks = p.tasks.filter(t => t.id !== id); document.getElementById('modal').classList.remove('open'); render(); } },
-    'delete-project': () => { if (confirm('Delete project "' + p.name + '" and all its data?')){ S.projects = S.projects.filter(x => x.id !== p.id); S.activeProjectId = null; render(); } },
+    'delete-task': () => { if (confirm(t('c_delTask'))){ p.tasks = p.tasks.filter(x => x.id !== id); document.getElementById('modal').classList.remove('open'); render(); } },
+    'delete-project': () => { if (confirm(tf('c_delProj', p.name))){ S.projects = S.projects.filter(x => x.id !== p.id); S.activeProjectId = null; render(); } },
     'gen-report': () => { document.getElementById('reportOut').value = buildReport(p); },
     'copy-report': () => {
       const v = document.getElementById('reportOut').value || buildReport(p);
       document.getElementById('reportOut').value = v;
-      (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(() => toast('Copied'), () => { document.getElementById('reportOut').select(); document.execCommand('copy'); toast('Copied'); });
+      (navigator.clipboard ? navigator.clipboard.writeText(v) : Promise.reject()).then(() => toast(t('t_copied')), () => { document.getElementById('reportOut').select(); document.execCommand('copy'); toast(t('t_copied')); });
     },
     'download-report': () => {
       const v = document.getElementById('reportOut').value || buildReport(p);
@@ -914,9 +1141,9 @@ document.addEventListener('change', e => {
   const p = proj();
   const el = e.target.closest('[data-action-change]');
   if (el && p){
-    const t = taskById(p, el.dataset.id);
+    const x = taskById(p, el.dataset.id);
     const map = {
-      'assign-sprint': () => { const nsid = el.value || null; t.sprintId = nsid; const as = activeSprint(p); t.addedAfterStart = !!(nsid && as && nsid === as.id); if (t.addedAfterStart && t.status==='backlog') setStatus(p,t,'todo'); render(); },
+      'assign-sprint': () => { const nsid = el.value || null; x.sprintId = nsid; const as = activeSprint(p); x.addedAfterStart = !!(nsid && as && nsid === as.id); if (x.addedAfterStart && x.status==='backlog') setStatus(p,x,'todo'); render(); },
       'sprint-goal': () => { p.sprints.find(s=>s.id===el.dataset.id).goal = el.value; save(); },
       'set-name': () => { p.name = el.value.trim() || p.name; save(); },
       'set-sprintlen': () => { p.settings.sprintLen = Math.max(7, +el.value || 14); save(); },
@@ -931,8 +1158,9 @@ document.addEventListener('change', e => {
     r.onload = () => { try {
       const data = JSON.parse(r.result);
       if (!Array.isArray(data.projects)) throw 0;
-      S = data; S.activeProjectId = null; toast('Imported'); render();
-    } catch(err){ toast('Import failed: not a valid backup'); } };
+      data.lang = data.lang || S.lang;
+      S = data; S.activeProjectId = null; toast(t('t_imported')); render();
+    } catch(err){ toast(t('t_importFail')); } };
     r.readAsText(e.target.files[0]);
   }
 });
@@ -944,17 +1172,17 @@ document.addEventListener('submit', e => {
   if (f.dataset.form === 'create-project'){
     createProject({ name: fd.get('name').trim(), mode: fd.get('mode'),
       sprintLen: +fd.get('sprintLen'), wipDoing: +fd.get('wipDoing') });
-    toast('Project created'); render();
+    toast(t('t_created')); render();
   }
   if (f.dataset.form === 'new-task' && p){
     const title = fd.get('title').trim(); if (!title) return;
     createTask(p, { title, type: fd.get('type'), points: fd.get('points') });
-    toast('Added to backlog'); render();
+    toast(t('t_added')); render();
   }
   if (f.dataset.form === 'quick-task' && p){
     const title = fd.get('title').trim(); if (!title) return;
-    const t = createTask(p, { title, status:'backlog' });
-    setStatus(p, t, 'todo');
+    const x = createTask(p, { title, status:'backlog' });
+    setStatus(p, x, 'todo');
     render();
   }
 });
